@@ -1,0 +1,226 @@
+[project]
+name = "hackathon-avatar-poc"
+version = "0.1.0"
+description = "PoC локального видео-аватара (RTX 4070 Ti, русский язык)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "Hackathon Team", email = "team@example.com" }
+]
+keywords = ["avatar", "llm", "tts", "lipsync", "ollama", "russian"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    # Web Framework
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "websockets>=13.0",
+    "python-multipart>=0.0.9",
+
+    # Data Validation
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    "orjson>=3.10.0",
+
+    # LLM
+    "ollama>=0.4.0",
+
+    # TTS (русский язык)
+    "TTS>=0.22.0",  # Coqui TTS для XTTS-v2
+    # Альтернатива: установить отдельно Silero
+    # pip install silero-api-server
+
+    # Audio Processing
+    "librosa>=0.10.0",
+    "soundfile>=0.12.0",
+    "pydub>=0.25.0",
+    "numpy>=1.26.0",
+
+    # Sentiment Analysis (русский язык)
+    "transformers>=4.46.0",
+    "torch>=2.5.0",
+    "sentencepiece>=0.2.0",
+    "accelerate>=0.34.0",  # для оптимизации Transformers
+
+    # Utilities
+    "loguru>=0.7.0",
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0",
+    "aiofiles>=24.1.0",
+
+    # Optional: VRAM monitoring
+    "pynvml>=11.5.0",
+]
+
+[project.optional-dependencies]
+silero = [
+    "silero>=0.4.1",  # Альтернативный TTS
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/hackathon-avatar-poc"
+Repository = "https://github.com/your-org/hackathon-avatar-poc"
+Issues = "https://github.com/your-org/hackathon-avatar-poc/issues"
+
+[project.scripts]
+avatar-server = "avatar.main:run_server"
+avatar-cli = "avatar.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true
+dev-dependencies = [
+    "basedpyright>=1.31.6",
+    "ruff>=0.14.3",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "httpx>=0.27.0",  # для тестирования API
+    "faker>=30.0.0",  # для генерации тестовых данных
+]
+
+# Ruff Configuration
+[tool.ruff]
+target-version = "py311"
+line-length = 99
+preview = true
+exclude = [
+    ".git",
+    ".venv",
+    ".tests",
+    ".cache",
+    "build",
+    "dist",
+    "logs",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "S",      # flake8-bandit (security)
+    "B",      # flake8-bugbear
+    "G",      # flake8-logging-format
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "PD",     # pandas-vet
+    "PLC",    # pylint conventions
+    "PLE",    # pylint errors
+    "SIM",    # flake8-simplify
+    "RET",    # flake8-return
+    "YTT",    # flake8-2020
+    "RUF",    # Ruff-specific rules
+    "TCH",    # flake8-type-checking
+    "PTH",    # flake8-use-pathlib
+    "ASYNC",  # flake8-async
+]
+
+ignore = [
+    "S311",    # pseudo-random generators (не критично для PoC)
+    "S101",    # assert statements (используются в тестах)
+    "D",       # pydocstring (опционально для PoC)
+    "DOC",     # docstring coverage
+    "ERA",     # eradicate (commented code)
+    "T201",    # print statements (можно для debug)
+    "TRY003",  # external messages in exceptions
+    "EM102",   # exception must not use f-string
+    "BLE001",  # blind except
+    "ASYNC109", # async function with timeout
+    "RUF003",  # ambiguous unicode characters
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S105", "S106"]  # allow asserts and hardcoded passwords
+"**/__init__.py" = ["F401"]  # allow unused imports
+
+[tool.ruff.lint.isort]
+known-first-party = ["avatar"]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
+
+# Basedpyright Configuration
+[tool.basedpyright]
+include = ["src"]
+exclude = [
+    ".git",
+    ".venv",
+    ".tests",
+    ".cache",
+    "build",
+    "dist",
+]
+typeCheckingMode = "standard"  # standard | strict | basic
+pythonVersion = "3.11"
+pythonPlatform = "Linux"
+
+# Strict mode options
+reportMissingImports = true
+reportMissingTypeStubs = true
+reportUnusedImport = "warning"
+reportUnusedVariable = "warning"
+reportDuplicateImport = "error"
+reportIncompatibleMethodOverride = "error"
+reportIncompatibleVariableOverride = "error"
+reportUntypedFunctionDecorator = "warning"
+reportUntypedClassDecorator = "warning"
+
+# Pytest Configuration
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src/avatar",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+# Coverage Configuration
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/__init__.py",
+    "*/main.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
