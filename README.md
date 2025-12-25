@@ -1,1 +1,61 @@
-# MirageGen
+# Hackathon Avatar PoC
+
+Локальный видео-аватар с диалоговыми возможностями на русском языке.
+
+## Quick Start
+
+### 1. Установка зависимостей
+
+```bash
+# Установить uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Установить Ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Скачать Mistral
+ollama pull mistral:7b-instruct-q4_K_M
+
+# Установить Python зависимости
+uv sync
+```
+
+### 2. Скачать Rhubarb
+
+```bash
+# Linux
+wget https://github.com/DanielSWolf/rhubarb-lip-sync/releases/download/v1.13.0/Rhubarb-Lip-Sync-1.13.0-Linux.zip
+unzip Rhubarb-Lip-Sync-1.13.0-Linux.zip -d assets/rhubarb/
+```
+
+### 3. Запуск
+
+```bash
+# Запустить Ollama сервер
+ollama serve
+
+# Запустить API
+uv run avatar-server
+```
+
+## Architecture
+
+См. [ARCHITECTURE.md](ARCHITECTURE.md) и [SPEC.md](SPEC.md)
+
+## Требования
+
+- Python 3.11+
+- RTX 4070 Ti (12GB VRAM) или аналог
+- Ollama
+- Linux/macOS (Windows с WSL2)
+
+## Структура проекта
+
+```
+├── ARCHITECTURE.md          # Архитектура системы
+├── SPEC.md                  # Техническая спецификация
+├── pyproject.toml           # Конфигурация проекта
+├── src/avatar/              # Основной код
+├── assets/                  # Статические ресурсы
+└── tests/                   # Тесты
+```
