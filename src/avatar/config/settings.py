@@ -8,6 +8,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
+import yaml
+from loguru import logger
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -130,4 +132,30 @@ class Settings(BaseSettings):
             FileNotFoundError: Если файл не существует.
             ValueError: Если YAML невалиден.
         """
-        raise NotImplementedError("TODO: Implement load_from_yaml")
+        yaml_path = Path(yaml_path)
+
+        # Проверка существования файла
+        if not yaml_path.exists():
+            raise FileNotFoundError(f"Config file not found: {yaml_path}")
+
+        logger.debug(f"Loading settings from YAML: {yaml_path}")
+
+        try:
+            # Чтение YAML
+            with open(yaml_path, encoding="utf-8") as f:
+                config_dict = yaml.safe_load(f)
+
+            if not config_dict:
+                raise ValueError(f"Empty YAML config: {yaml_path}")
+
+            # Создание Settings из dict
+            settings = cls(**config_dict)
+            logger.info(f"Settings loaded from {yaml_path}")
+            return settings
+
+        except yaml.YAMLError as e:
+            logger.error(f"Invalid YAML syntax in {yaml_path}: {e}")
+            raise ValueError(f"Invalid YAML config: {e}") from e
+        except Exception as e:
+            logger.error(f"Failed to load settings from {yaml_path}: {e}")
+            raise ValueError(f"Failed to load settings: {e}") from e

@@ -14,6 +14,9 @@ CONVERSATION_SYSTEM_PROMPT = """Ты — виртуальный аватар, к
 Если пользователь задаёт вопрос, ответь по существу.
 Если пользователь выражает эмоцию, поддержи её соответствующей реакцией."""
 
+ENGLISH_SYSTEM_PROMPT = """You are a friendly AI assistant.
+Answer concisely and naturally.
+Use emotional expressions when appropriate."""
 
 def get_system_prompt(language: str = "ru") -> str:
     """Получить системный промпт для языка.
@@ -27,4 +30,14 @@ def get_system_prompt(language: str = "ru") -> str:
     Raises:
         ValueError: Если язык не поддерживается.
     """
-    raise NotImplementedError("TODO: Implement get_system_prompt")
+    prompts = {
+        "ru": CONVERSATION_SYSTEM_PROMPT,
+        "en": ENGLISH_SYSTEM_PROMPT,
+    }
+
+    if language not in prompts:
+        raise ValueError(
+            f"Unsupported language: {language}. Supported: {list(prompts.keys())}"
+        )
+
+    return prompts[language]

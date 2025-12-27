@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from avatar.api.middleware import setup_logging_middleware
 from avatar.api.routes import chat, stream
-from avatar.config import Settings
+from avatar.config.settings import Settings
 
 if TYPE_CHECKING:
     from avatar.pipeline.avatar_pipeline import AvatarPipeline

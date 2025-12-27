@@ -13,6 +13,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex" # для Windows
 # Установить Ollama
 curl -fsSL https://ollama.com/install.sh | sh # Пока стоят заглушки для тестов, можно сразу писать uv sync без ollama
+# или скачать с https://ollama.com/download/
 
 # Скачать Mistral
 ollama pull mistral:7b-instruct-q4_K_M # Также пока не надо для sync
@@ -47,6 +48,11 @@ uv run avatar-server
 
 # Запустить тесты
 uv run pytest
+
+# Мок тест llm
+uv run pytest tests/test_lln/test_ollama_provider.py -v
+# Интеграционный тест llm
+uv run pytest tests/test_llm/test_ollama_integration.py -v -s -m integration
 
 ```
 

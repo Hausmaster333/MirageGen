@@ -7,7 +7,7 @@ import uvicorn
 from loguru import logger
 
 from avatar.api.app import create_app
-from avatar.config import Settings
+from avatar.config.settings import Settings
 from avatar.lipsync.factory import LipSyncFactory
 from avatar.llm.factory import LLMFactory
 from avatar.motion.factory import MotionFactory
