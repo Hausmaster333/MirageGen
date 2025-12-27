@@ -3,7 +3,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from avatar.api.app import create_app
-from avatar.config import Settings
+from avatar.config.settings import Settings
 
 
 @pytest.fixture

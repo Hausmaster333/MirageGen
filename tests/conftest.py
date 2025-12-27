@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pathlib import Path
 
-from avatar.config import Settings
+from avatar.config.settings import Settings
 from avatar.motion.sentiment_analyzer import SentimentAnalyzer
 from avatar.pipeline.avatar_pipeline import AvatarPipeline
 
