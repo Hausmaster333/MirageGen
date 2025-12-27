@@ -88,7 +88,22 @@ class RhubarbGenerator(ILipSyncGenerator):
             FileNotFoundError: Если audio_path не существует.
             RuntimeError: Если Rhubarb завершился с ошибкой.
         """
-        raise NotImplementedError("TODO: Implement generate_blendshapes")
+        if not audio_path.exists():
+            msg = f"Audio file not found: {audio_path}"
+            logger.error(msg)
+            raise FileNotFoundError(msg)
+
+        logger.info(f"Generating blendshapes for audio: {audio_path}")
+        
+        rhubarb_json = self._run_rhubarb(audio_path, recognizer)
+        blendshape_weights = self._parse_rhubarb_output(rhubarb_json)
+        
+        logger.info(
+            f"Generated {len(blendshape_weights.frames)} blendshape frames "
+            f"(duration: {blendshape_weights.duration:.2f}s)"
+        )
+        
+        return blendshape_weights
 
     def get_phoneme_mapping(self) -> dict[str, str]:
         """Mapping Rhubarb phonemes → Three.js blendshapes.
@@ -111,7 +126,40 @@ class RhubarbGenerator(ILipSyncGenerator):
         Raises:
             RuntimeError: Если Rhubarb упал с ошибкой.
         """
-        raise NotImplementedError("TODO: Implement _run_rhubarb")
+        cmd = [
+            str(self.rhubarb_path),
+            "-f", "json",
+            "-r", recognizer,
+            str(audio_path),
+        ]
+        
+        logger.debug(f"Running Rhubarb CLI: {' '.join(cmd)}")
+        
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=300,
+            )
+            
+            rhubarb_json = json.loads(result.stdout)
+            logger.debug(f"Rhubarb output parsed successfully")
+            return rhubarb_json
+            
+        except subprocess.CalledProcessError as e:
+            msg = f"Rhubarb CLI failed with code {e.returncode}: {e.stderr}"
+            logger.error(msg)
+            raise RuntimeError(msg) from e
+        except subprocess.TimeoutExpired as e:
+            msg = f"Rhubarb CLI timed out after 300s"
+            logger.error(msg)
+            raise RuntimeError(msg) from e
+        except json.JSONDecodeError as e:
+            msg = f"Failed to parse Rhubarb JSON output: {e}"
+            logger.error(msg)
+            raise RuntimeError(msg) from e
 
     def _parse_rhubarb_output(self, rhubarb_json: dict) -> BlendshapeWeights:
         """Парсинг JSON-вывода Rhubarb в BlendshapeWeights.
@@ -122,4 +170,31 @@ class RhubarbGenerator(ILipSyncGenerator):
         Returns:
             BlendshapeWeights: Blendshape frames.
         """
-        raise NotImplementedError("TODO: Implement _parse_rhubarb_output")
+        mouth_cues = rhubarb_json.get("mouthCues", [])
+        metadata = rhubarb_json.get("metadata", {})
+        duration = metadata.get("duration", 0.0)
+        
+        if not mouth_cues:
+            logger.warning("No mouth cues found in Rhubarb output")
+            return BlendshapeWeights(frames=[], fps=30, duration=duration)
+        
+        frames = []
+        for cue in mouth_cues:
+            timestamp = cue.get("start", 0.0)
+            phoneme = cue.get("value", "X")
+            
+            blendshape_name = self._phoneme_mapping.get(phoneme, "viseme_sil")
+            
+            frame = BlendshapeFrame(
+                timestamp=timestamp,
+                mouth_shapes={blendshape_name: 1.0}
+            )
+            frames.append(frame)
+        
+        logger.debug(f"Parsed {len(frames)} frames from Rhubarb output")
+        
+        return BlendshapeWeights(
+            frames=frames,
+            fps=30,
+            duration=duration
+        )
