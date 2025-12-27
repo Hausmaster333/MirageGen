@@ -41,6 +41,14 @@ uv run avatar-server
 
 # localhost:8000/docs для проверки
 ```
+### 4. Тесты
+
+```bash
+
+# Запустить тесты
+uv run pytest
+
+```
 
 ## Architecture
 
