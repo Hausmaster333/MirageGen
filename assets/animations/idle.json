@@ -1,0 +1,26 @@
+{
+  "keyframes": [
+    {
+      "timestamp": 0.0,
+      "bone_rotations": {
+        "spine": [0.0, 0.0, 0.0, 1.0],
+        "head": [0.0, 0.0, 0.0, 1.0]
+      },
+      "bone_positions": {
+        "spine": [0.0, 0.0, 0.0]
+      }
+    },
+    {
+      "timestamp": 1.0,
+      "bone_rotations": {
+        "spine": [0.0, 0.05, 0.0, 0.998],
+        "head": [0.0, 0.0, 0.0, 1.0]
+      },
+      "bone_positions": {
+        "spine": [0.0, 0.0, 0.0]
+      }
+    }
+  ],
+  "emotion": "neutral",
+  "duration": 1.0
+}
