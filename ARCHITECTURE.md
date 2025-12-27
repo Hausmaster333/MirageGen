@@ -29,22 +29,26 @@ hackathon-avatar-poc/
 │       │
 │       ├── llm/                      # LLM компоненты
 │       │   ├── __init__.py
+│       │   ├── factory.py 
 │       │   ├── ollama_provider.py    # Ollama реализация
 │       │   └── prompt_templates.py   # Шаблоны промптов (ru)
 │       │
 │       ├── tts/                      # TTS движки
 │       │   ├── __init__.py
+│       │   ├── factory.py 
 │       │   ├── xtts_engine.py        # XTTS-v2 реализация
 │       │   ├── silero_engine.py      # Silero альтернатива
 │       │   └── audio_utils.py        # Утилиты для аудио
 │       │
 │       ├── lipsync/                  # Lip-sync генераторы
 │       │   ├── __init__.py
+│       │   ├── factory.py 
 │       │   ├── rhubarb_generator.py  # Rhubarb wrapper
 │       │   └── blendshape_mapper.py  # Mapping в Three.js формат
 │       │
 │       ├── motion/                   # Gesture/motion системы
 │       │   ├── __init__.py
+│       │   ├── factory.py 
 │       │   ├── preset_loader.py      # Загрузка preset анимаций
 │       │   ├── sentiment_analyzer.py # RuBERT sentiment
 │       │   └── animation_mixer.py    # Mixing анимаций
@@ -86,12 +90,26 @@ hackathon-avatar-poc/
 │
 ├── tests/                            # Тесты
 │   ├── __init__.py
+│   ├── conftest.py
 │   ├── test_llm/
+│   │   ├── __init__.py
+│   │   ├── test_ollama_integration.py
+│   │   ├── test_ollama_provider.py
 │   ├── test_tts/
+│   │   ├── __init__.py
+│   │   ├── test_xtts_engine.py
 │   ├── test_lipsync/
+│   │   ├── __init__.py
+│   │   ├── test_rhubarb_generator.py
 │   ├── test_motion/
+│   │   ├── __init__.py
+│   │   ├── test_preset_loader.py
 │   ├── test_pipeline/
+│   │   ├── __init__.py
+│   │   ├── test_avatar_pipeline.py
 │   └── test_api/
+│   │   ├── __init__.py
+│   │   ├── test_endpoints.py
 │
 └── frontend/                         # Three.js клиент (опционально)
     ├── index.html
