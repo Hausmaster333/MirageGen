@@ -1,0 +1,54 @@
+{
+  "keyframes": [
+    {
+      "timestamp": 0.0,
+      "bone_rotations": {
+        "spine": [0.0, 0.0, 0.0, 1.0],
+        "head": [0.0, 0.0, 0.0, 1.0],
+        "left_shoulder": [0.0, 0.0, 0.0, 1.0],
+        "right_shoulder": [0.0, 0.0, 0.0, 1.0]
+      },
+      "bone_positions": {
+        "spine": [0.0, 0.0, 0.0]
+      }
+    },
+    {
+      "timestamp": 0.5,
+      "bone_rotations": {
+        "spine": [0.0, -0.05, 0.0, 0.998],
+        "head": [-0.1, 0.0, 0.0, 0.995],
+        "left_shoulder": [0.0, 0.0, 0.05, 0.998],
+        "right_shoulder": [0.0, 0.0, -0.05, 0.998]
+      },
+      "bone_positions": {
+        "spine": [0.0, -0.05, 0.0]
+      }
+    },
+    {
+      "timestamp": 1.5,
+      "bone_rotations": {
+        "spine": [0.0, -0.05, 0.0, 0.998],
+        "head": [-0.1, 0.0, 0.0, 0.995],
+        "left_shoulder": [0.0, 0.0, 0.05, 0.998],
+        "right_shoulder": [0.0, 0.0, -0.05, 0.998]
+      },
+      "bone_positions": {
+        "spine": [0.0, -0.05, 0.0]
+      }
+    },
+    {
+      "timestamp": 2.0,
+      "bone_rotations": {
+        "spine": [0.0, 0.0, 0.0, 1.0],
+        "head": [0.0, 0.0, 0.0, 1.0],
+        "left_shoulder": [0.0, 0.0, 0.0, 1.0],
+        "right_shoulder": [0.0, 0.0, 0.0, 1.0]
+      },
+      "bone_positions": {
+        "spine": [0.0, 0.0, 0.0]
+      }
+    }
+  ],
+  "emotion": "sad",
+  "duration": 2.0
+}

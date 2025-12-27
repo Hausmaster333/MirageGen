@@ -1,10 +1,10 @@
 [project]
-name = "hackathon-avatar-poc"
+name = "miragegen"
 version = "0.1.0"
 description = "PoC локального видео-аватара (RTX 4070 Ti, русский язык)"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = { text = "Apache" }
 authors = [
     { name = "Hackathon Team", email = "team@example.com" }
 ]
@@ -33,7 +33,7 @@ dependencies = [
     "ollama>=0.4.0",
 
     # TTS (русский язык)
-    "TTS>=0.22.0",  # Coqui TTS для XTTS-v2
+    "coqui-tts>=0.27.3",  # форк Coqui TTS для XTTS-v2(оригинал не поддерживает python 3.12, документация идентичная)
     # Альтернатива: установить отдельно Silero
     # pip install silero-api-server
 
@@ -64,11 +64,6 @@ silero = [
     "silero>=0.4.1",  # Альтернативный TTS
 ]
 
-[project.urls]
-Homepage = "https://github.com/your-org/hackathon-avatar-poc"
-Repository = "https://github.com/your-org/hackathon-avatar-poc"
-Issues = "https://github.com/your-org/hackathon-avatar-poc/issues"
-
 [project.scripts]
 avatar-server = "avatar.main:run_server"
 avatar-cli = "avatar.cli:main"
@@ -76,6 +71,9 @@ avatar-cli = "avatar.cli:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/avatar"]
 
 [tool.uv]
 package = true
@@ -169,8 +167,8 @@ exclude = [
     "dist",
 ]
 typeCheckingMode = "standard"  # standard | strict | basic
-pythonVersion = "3.11"
-pythonPlatform = "Linux"
+pythonVersion = "3.12"
+pythonPlatform = "Windows"
 
 # Strict mode options
 reportMissingImports = true
