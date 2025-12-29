@@ -60,6 +60,7 @@ Thumbs.db
 # Project-specific
 assets/rhubarb/rhubarb*  # Бинарь Rhubarb (скачивается отдельно)
 models/                   # Загруженные ML-модели (HuggingFace)
+assets/silero/
 
 # Временные файлы
 *.tmp
