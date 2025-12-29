@@ -1,0 +1,46 @@
+{
+  "keyframes": [
+    {
+      "timestamp": 0.0,
+      "bone_rotations": {
+        "spine": [0.0, 0.0, 0.0, 1.0],
+        "head": [0.0, 0.0, 0.0, 1.0],
+        "right_arm": [0.0, 0.0, 0.0, 1.0],
+        "right_hand": [0.0, 0.0, 0.0, 1.0]
+      },
+      "bone_positions": {}
+    },
+    {
+      "timestamp": 0.3,
+      "bone_rotations": {
+        "spine": [0.0, 0.02, 0.0, 0.999],
+        "head": [0.0, 0.05, 0.05, 0.997],
+        "right_arm": [0.3, 0.0, 0.0, 0.953],
+        "right_hand": [0.0, 0.1, 0.0, 0.995]
+      },
+      "bone_positions": {}
+    },
+    {
+      "timestamp": 1.0,
+      "bone_rotations": {
+        "spine": [0.0, 0.02, 0.0, 0.999],
+        "head": [0.0, 0.05, 0.05, 0.997],
+        "right_arm": [0.3, 0.0, 0.0, 0.953],
+        "right_hand": [0.0, 0.1, 0.0, 0.995]
+      },
+      "bone_positions": {}
+    },
+    {
+      "timestamp": 1.5,
+      "bone_rotations": {
+        "spine": [0.0, 0.0, 0.0, 1.0],
+        "head": [0.0, 0.0, 0.0, 1.0],
+        "right_arm": [0.0, 0.0, 0.0, 1.0],
+        "right_hand": [0.0, 0.0, 0.0, 1.0]
+      },
+      "bone_positions": {}
+    }
+  ],
+  "emotion": "thinking",
+  "duration": 1.5
+}
