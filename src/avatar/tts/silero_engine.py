@@ -44,20 +44,53 @@ class SileroEngine(ITTSEngine):
 
             # Если модели нет локально - скачиваем
             if not model_path.exists():
-                logger.info("Downloading Silero V5 model manually...")
+                logger.info("Downloading Silero V5 model manually (via requests)...")
                 model_path.parent.mkdir(parents=True, exist_ok=True)
 
-                # Прямая ссылка на v5_ru.pt
                 url = "https://models.silero.ai/models/tts/ru/v5_ru.pt"
 
-                torch.hub.download_url_to_file(url, str(model_path))
-                logger.info(f"Model downloaded to {model_path}")
+                try:
+                    import requests
+                    from tqdm import tqdm
+
+                    # Открываем соединение в потоковом режиме
+                    response = requests.get(url, stream=True, timeout=100)
+                    response.raise_for_status()  # Проверка на ошибки (404, 500)
+
+                    total_size = int(response.headers.get('content-length', 0))
+                    block_size = 1024  # 1 KB
+
+                    with open(model_path, "wb") as file, tqdm(
+                            desc="Silero Model",
+                            total=total_size,
+                            unit="iB",
+                            unit_scale=True,
+                            unit_divisor=1024,
+                    ) as bar:
+                        for data in response.iter_content(block_size):
+                            size = file.write(data)
+                            bar.update(size)
+
+                    logger.info(f"Model downloaded to {model_path}")
+
+                except Exception as e:
+                    # Если скачивание упало - удаляем недокачанный файл
+                    if model_path.exists():
+                        model_path.unlink()
+                    logger.error(f"Failed to download model: {e}")
+                    raise RuntimeError(
+                        f"Could not download Silero model. Please download manually from {url} to {model_path}") from e
+
             else:
                 logger.info(f"Using local model from {model_path}")
 
             # Загружаем локальный файл
-            self._model = torch.package.PackageImporter(model_path).load_pickle("tts_models", "model")
-            self._model.to(self.device)
+            try:
+                self._model = torch.package.PackageImporter(model_path).load_pickle("tts_models", "model")
+                self._model.to(self.device)
+            except Exception as e:
+                logger.error(f"Failed to load model from disk: {e}")
+                raise RuntimeError("Model file is corrupted. Delete assets/silero/model.pt and try again.") from e
 
         return self._model
 
