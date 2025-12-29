@@ -1,5 +1,5 @@
 """Интеграционные тесты для OllamaProvider с реальным Mistral."""
-
+import re
 import pytest
 from ollama import ResponseError
 
@@ -88,7 +88,7 @@ async def test_ollama_generate_stream(ollama_provider):
     chunks = []
     token_count = 0
     
-    async for chunk in ollama_provider.generate_stream(messages, temperature=0.8, max_tokens=150):
+    async for chunk in ollama_provider.generate_stream(messages, temperature=0.8, max_tokens=500):
         chunks.append(chunk)
         token_count += 1
         print(chunk, end="", flush=True)  # Печатать токены в реальном времени
@@ -101,6 +101,104 @@ async def test_ollama_generate_stream(ollama_provider):
     
     print(f"\n\n✅ Streamed {token_count} tokens")
     print(f"📝 Full text: {full_text[:100]}...")
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_ollama_generate_stream_with_chunking(ollama_provider):
+    """Тест: потоковая генерация с разбиением на чанки для TTS."""
+    from avatar.llm.text_chunker import TextChunker
+    
+    messages = [
+        Message(role="user", content="Расскажи короткую историю про кота.")
+    ]
+    
+    # Создать chunker
+    chunker = TextChunker(mode="hybrid", max_words=10, min_words=4)
+    
+    # Получить stream от LLM
+    llm_stream = ollama_provider.generate_stream(
+        messages, temperature=0.5, max_tokens=500
+    )
+    
+    # Обработать stream через chunker
+    tts_chunks = []
+    chunk_count = 0
+    
+    print("\n📣 TTS Chunks (ready for synthesis):\n")
+    async for chunk in chunker.process_stream(llm_stream):
+        chunk_count += 1
+        tts_chunks.append(chunk)
+        
+        # Проверки качества чанка
+        assert len(chunk.strip()) > 0, f"Chunk {chunk_count} is empty"
+        assert chunk == chunk.strip(), f"Chunk {chunk_count} has leading/trailing spaces"
+        
+        # Проверить, что слова не обрезаны
+        words = chunk.split()
+        assert len(words) > 0, f"Chunk {chunk_count} has no words"
+        
+        # Проверить, что нет неполных слов в начале/конце
+        # (слова должны заканчиваться на букву или знак препинания)
+        first_word = words[0]
+        last_word = words[-1]
+        
+        # Первое слово должно начинаться с буквы
+        assert first_word[0].isalpha() or first_word[0] in '«"', \
+            f"Chunk {chunk_count} starts with incomplete word: '{first_word}'"
+        
+        # Последнее слово должно заканчиваться нормально
+        assert last_word[-1].isalpha() or last_word[-1] in '.,!?;:—–…»"', \
+            f"Chunk {chunk_count} ends with incomplete word: '{last_word}'"
+        
+        # Симуляция отправки в TTS
+        print(f"[Chunk {chunk_count}] {chunk}")
+        print(f"  └─ Words: {len(words)}, Chars: {len(chunk)}\n")
+    
+    # Склейка текста с пробелами
+    full_text = " ".join(tts_chunks)
+    
+    assert len(tts_chunks) > 0, "No chunks generated"
+    assert chunk_count > 0, "Chunk count should be positive"
+    assert len(full_text) > 0, "Full text is empty"
+    
+    # Проверить отсутствие двойных пробелов
+    assert "  " not in full_text, "Full text contains double spaces"
+    
+    print(f"✅ Total chunks: {chunk_count}")
+    print(f"📝 Full text ({len(full_text)} chars):")
+    print(f"{full_text}\n")
+
+
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_ollama_stream_chunking_modes(ollama_provider):
+    """Тест: сравнение разных режимов chunking."""
+    from avatar.llm.text_chunker import TextChunker
+    
+    messages = [
+        Message(role="user", content="Расскажи про космос. Что такое черная дыра?")
+    ]
+    
+    modes = ["words", "punctuation", "hybrid"]
+    
+    for mode in modes:
+        print(f"\n{'='*60}")
+        print(f"Mode: {mode}")
+        print(f"{'='*60}\n")
+        
+        chunker = TextChunker(mode=mode, max_words=6)
+        llm_stream = ollama_provider.generate_stream(messages, temperature=0.7, max_tokens=100)
+        
+        chunks = []
+        async for chunk in chunker.process_stream(llm_stream):
+            chunks.append(chunk)
+            print(f"[{mode}] {chunk}\n")
+        
+        assert len(chunks) > 0, f"No chunks for mode {mode}"
+        print(f"✅ {mode}: {len(chunks)} chunks\n")
 
 
 @pytest.mark.integration
