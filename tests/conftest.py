@@ -34,27 +34,29 @@ class MockLLMProvider:
 
 class MockTTSEngine:
     """Mock TTS для тестов."""
-    
+
     async def synthesize(self, text, language="ru", speaker_wav=None):
         from avatar.schemas.audio_types import AudioSegment
+
         return AudioSegment(
             audio_bytes=b"fake_audio",
-            sample_rate=24000,
+            sample_rate=48000,   # Изменено на 48000
             format="wav",
             duration=1.0,
         )
-    
+
     async def synthesize_streaming(self, text, language="ru"):
         from avatar.schemas.audio_types import AudioSegment
+
         yield AudioSegment(
             audio_bytes=b"fake_chunk",
-            sample_rate=24000,
+            sample_rate=48000,   # Изменено на 48000
             format="wav",
             duration=0.5,
         )
-    
+
     def get_supported_languages(self):
-        return ["ru", "en"]
+        return ["ru"]  # Изменено: только ru
 
 
 class MockLipSyncGenerator:

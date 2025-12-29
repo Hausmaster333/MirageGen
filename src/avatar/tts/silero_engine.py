@@ -3,110 +3,118 @@
 
 Нативная поддержка русского языка, быстрая генерация, малый VRAM-footprint.
 """
-
-from __future__ import annotations
-
-from typing import TYPE_CHECKING, AsyncIterator
-
+from pathlib import Path  # В начало файла
+import soundfile
+import torch
+import torchaudio
+import io
+from typing import AsyncIterator
 from loguru import logger
-
 from avatar.interfaces.tts import ITTSEngine
 from avatar.schemas.audio_types import AudioSegment
 
-if TYPE_CHECKING:
-    import torch
-
 
 class SileroEngine(ITTSEngine):
-    """Silero TTS Engine (русский, легковесный).
-
-    Attributes:
-        language: Язык синтеза (только "ru").
-        speaker: Голос диктора ("aidar", "baya", "kseniya", "xenia", "random").
-        sample_rate: Частота дискретизации (8000, 24000, 48000).
-        model: Silero TTS model.
-        device: Устройство (CPU или CUDA).
-    """
-
     def __init__(
-        self,
-        language: str = "ru",
-        speaker: str = "aidar",
-        sample_rate: int = 24000,
+            self,
+            language: str = "ru",
+            speaker: str = "xenia",
+            sample_rate: int = 48000,
+            device: str = "cpu"
     ) -> None:
-        """Инициализация Silero Engine.
 
-        Args:
-            language: Язык синтеза (только "ru").
-            speaker: Голос диктора.
-            sample_rate: Частота дискретизации.
 
-        Raises:
-            ValueError: Если язык не "ru".
-        """
+
         if language != "ru":
-            msg = f"SileroEngine supports only 'ru', got '{language}'"
-            raise ValueError(msg)
+            raise ValueError("SileroEngine supports only 'ru'")
+
+
+
         self.language = language
         self.speaker = speaker
         self.sample_rate = sample_rate
-        self._model: torch.nn.Module | None = None
-        self._device: str | None = None
-        logger.info(f"SileroEngine initialized: speaker={speaker}, sample_rate={sample_rate}")
+        self.device = torch.device(device)
+        self._model = None
 
-    def _load_model(self) -> torch.nn.Module:
-        """Загрузка Silero TTS модели.
+        logger.info(f"SileroEngine initialized: speaker={speaker}, sample_rate={sample_rate}, device={device}")
 
-        Returns:
-            torch.nn.Module: Загруженная модель.
+    def _load_model(self):
+        if self._model is None:
+            model_path = Path("assets/silero/model.pt")
 
-        Raises:
-            RuntimeError: Если загрузка модели не удалась.
-        """
-        raise NotImplementedError("TODO: Implement _load_model")
+            # Если модели нет локально - скачиваем
+            if not model_path.exists():
+                logger.info("Downloading Silero V5 model manually...")
+                model_path.parent.mkdir(parents=True, exist_ok=True)
+
+                # Прямая ссылка на v5_ru.pt
+                url = "https://models.silero.ai/models/tts/ru/v5_ru.pt"
+
+                torch.hub.download_url_to_file(url, str(model_path))
+                logger.info(f"Model downloaded to {model_path}")
+            else:
+                logger.info(f"Using local model from {model_path}")
+
+            # Загружаем локальный файл
+            self._model = torch.package.PackageImporter(model_path).load_pickle("tts_models", "model")
+            self._model.to(self.device)
+
+        return self._model
 
     async def synthesize(
-        self,
-        text: str,
-        language: str = "ru",
-        speaker_wav: str | None = None,
+            self,
+            text: str,
+            language: str = "ru",
+            speaker_wav: str | None = None
     ) -> AudioSegment:
-        """Синтез речи из текста (non-streaming).
+        if not text:
+            raise ValueError("Text is empty")
 
-        Args:
-            text: Текст для озвучки.
-            language: Язык синтеза (игнорируется, всегда "ru").
-            speaker_wav: Игнорируется (Silero не поддерживает voice cloning).
+        model = self._load_model()
 
-        Returns:
-            AudioSegment: Аудио-сегмент с метаданными.
+        # Генерация аудио (тензор)
+        audio_tensor = model.apply_tts(
+            text=text,
+            speaker=self.speaker,
+            sample_rate=self.sample_rate
+        )
 
-        Raises:
-            ValueError: Если текст пустой.
-            RuntimeError: Если синтез завершился ошибкой.
-        """
-        raise NotImplementedError("TODO: Implement synthesize")
+        # Конвертация тензора в байты (WAV)
+        buffer = io.BytesIO()
+        import soundfile as sf
+
+        # audio_tensor имеет форму [Time] или [1, Time]. soundfile хочет [Time] (numpy)
+        audio_numpy = audio_tensor.detach().cpu().numpy()
+        if len(audio_numpy.shape) > 1:
+            audio_numpy = audio_numpy.squeeze()
+
+        sf.write(buffer, audio_numpy, self.sample_rate, format='WAV', subtype='PCM_16')
+
+        audio_bytes = buffer.getvalue()
+
+        duration = len(audio_tensor) / self.sample_rate
+
+        return AudioSegment(
+            audio_bytes=audio_bytes,
+            sample_rate=self.sample_rate,
+            format="wav",
+            duration=duration
+        )
 
     async def synthesize_streaming(
-        self,
-        text: str,
-        language: str = "ru",
+            self,
+            text: str,
+            language: str = "ru"
     ) -> AsyncIterator[AudioSegment]:
-        """Синтез речи (streaming).
+        # Простое разбиение по знакам препинания для PoC
+        import re
+        sentences = re.split(r'(?<=[.!?]) +', text)
 
-        Args:
-            text: Текст для озвучки.
-            language: Язык синтеза (игнорируется, всегда "ru").
+        for sentence in sentences:
+            if not sentence.strip():
+                continue
+            yield await self.synthesize(sentence)
 
-        Yields:
-            AudioSegment: Аудио-чанки.
-
-        Raises:
-            ValueError: Если текст пустой.
-            RuntimeError: Если синтез завершился ошибкой.
-        """
-        raise NotImplementedError("TODO: Implement synthesize_streaming")
-        yield  # type: ignore[unreachable]
 
     def get_supported_languages(self) -> list[str]:
         """Список поддерживаемых языков.

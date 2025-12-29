@@ -7,9 +7,12 @@
   system_prompt_ru: "Ты дружелюбный русскоязычный AI-ассистент."
 
 tts:
-  engine: xtts
+  engine: silero
   language: ru
-  speaker_wav: null
+  model_id: v5_ru
+  speaker: xenia
+  sample_rate: 48000
+  device: cpu
   speed: 1.0
 
 lipsync:
