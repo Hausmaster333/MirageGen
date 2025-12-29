@@ -65,4 +65,4 @@ assets/silero/
 # Временные файлы
 *.tmp
 *.bak
-*.swp
+*.swpassets/silero/model.pt
