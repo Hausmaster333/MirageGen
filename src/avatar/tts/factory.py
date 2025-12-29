@@ -1,4 +1,3 @@
-# === Файл: src/avatar/tts/factory.py ===
 """Factory для создания TTS движков на основе конфига."""
 
 from __future__ import annotations
@@ -9,7 +8,9 @@ from loguru import logger
 
 from avatar.interfaces.tts import ITTSEngine
 from avatar.tts.silero_engine import SileroEngine
-from avatar.tts.xtts_engine import XTTSEngine
+
+# XTTSEngine удален из импортов, так как библиотека исключена
+# from avatar.tts.xtts_engine import XTTSEngine
 
 if TYPE_CHECKING:
     from avatar.config.settings import TTSConfig
@@ -31,24 +32,32 @@ class TTSFactory:
         Raises:
             ValueError: Если движок не поддерживается.
         """
-        engine = config.engine.lower()
+        engine_type = config.engine.lower()
 
-        if engine == "xtts":
-            logger.info(f"Creating XTTSEngine for language={config.language}")
-            return XTTSEngine(
-                language=config.language,
-                speed=config.speed,
-                speaker_wav=config.speaker_wav,
-            )
+        if engine_type == "silero":
+            logger.info(f"Creating SileroEngine (v5) for language={config.language}")
 
-        if engine == "silero":
-            logger.info(f"Creating SileroEngine for language={config.language}")
+            # Извлекаем параметры из конфига или используем дефолты для V5
+            # Pydantic модель TTSConfig может иметь поле extra_params или поля напрямую
+            # Здесь предполагаем, что поля добавлены в TTSConfig (см. models_config.yaml)
+
+            speaker = getattr(config, "speaker", "xenia")
+            sample_rate = getattr(config, "sample_rate", 48000)
+            device = getattr(config, "device", "cpu")
+
             return SileroEngine(
                 language=config.language,
-                speaker="aidar",  # Можно добавить в config
-                sample_rate=24000,
+                speaker=speaker,
+                sample_rate=sample_rate,
+                device=device
             )
 
+        # Если вдруг захотим вернуть XTTS, код будет здесь,
+        # но сейчас мы не импортируем класс, чтобы не ломать сборку без пакета coqui-tts
+        if engine_type == "xtts":
+            raise NotImplementedError("XTTS engine is disabled in this build.")
+
         raise ValueError(
-            f"Unsupported TTS engine: {engine}. " f"Supported: xtts, silero"
+            f"Unsupported TTS engine: {engine_type}. "
+            f"Supported: silero"
         )
