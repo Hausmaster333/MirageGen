@@ -97,12 +97,13 @@ class AvatarPipeline(IPipeline):
         async for text_chunk in self._process_llm_stream(messages):
             try:
                 # 1. Синтезировать аудио
-                audio_bytes = await self._process_tts_chunk(text_chunk)
+                audio_bytes, duration = await self._process_tts_chunk(text_chunk)
                 
                 # 2. Генерировать blendshapes (stub - реализуете позже)
                 # blendshapes = await self._process_lipsync(audio_path)
                 
                 # 3. Генерировать motion (stub - реализуете позже)
+                # Сначала через sentiment_analyze получаем emotion, а duration выше получаем
                 # motion = await self._process_motion(emotion, duration)
                 
                 # 4. Создать AvatarFrame
@@ -192,7 +193,7 @@ class AvatarPipeline(IPipeline):
                 f"{len(audio_segment.audio_bytes)} bytes"
             )
             
-            return audio_segment.audio_bytes
+            return audio_segment.audio_bytes, audio_segment.duration
             
         except Exception as e:
             logger.error(f"TTS synthesis failed: {e}")
