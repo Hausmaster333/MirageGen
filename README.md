@@ -50,7 +50,7 @@ uv run avatar-server
 uv run pytest
 
 # Мок тест llm
-uv run pytest tests/test_lln/test_ollama_provider.py -v
+uv run pytest tests/test_llm/test_ollama_provider.py -v
 # Интеграционный тест llm
 uv run pytest tests/test_llm/test_ollama_integration.py -v -s -m integration
 
