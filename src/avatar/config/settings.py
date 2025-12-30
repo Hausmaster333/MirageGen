@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 from typing import Literal
 
@@ -12,6 +13,9 @@ import yaml
 from loguru import logger
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Подавление deprecated warnings от PyTorch (TypedStorage)
+warnings.filterwarnings("ignore", category=UserWarning, module="torch.package.package_importer")
 
 
 class LLMConfig(BaseSettings):
@@ -108,7 +112,6 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="AVATAR_",
         env_nested_delimiter="__",
-        yaml_file="config/models_config.yaml",
         extra="ignore",
     )
 
