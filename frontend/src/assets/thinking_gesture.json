@@ -4,39 +4,44 @@
       "timestamp": 0.0,
       "bone_rotations": {
         "spine": [0.0, 0.0, 0.0, 1.0],
-        "head": [0.0, 0.0, 0.0, 1.0],
         "right_arm": [0.0, 0.0, 0.0, 1.0],
-        "right_hand": [0.0, 0.0, 0.0, 1.0]
+        "right_forearm": [0.0, 0.0, 0.0, 1.0]
       },
       "bone_positions": {}
     },
     {
-      "timestamp": 0.3,
+      "timestamp": 0.5,
       "bone_rotations": {
-        "spine": [0.0, 0.02, 0.0, 0.999],
-        "head": [0.0, 0.05, 0.05, 0.997],
-        "right_arm": [0.3, 0.0, 0.0, 0.953],
-        "right_hand": [0.0, 0.1, 0.0, 0.995]
+        "spine": [0.0, -0.05, 0.0, 0.998],
+        "right_arm": [0.0, 0.0, 0.6, 0.8],
+        "right_forearm": [0.5, 0.0, 0.0, 0.866]
       },
       "bone_positions": {}
     },
     {
       "timestamp": 1.0,
       "bone_rotations": {
-        "spine": [0.0, 0.02, 0.0, 0.999],
-        "head": [0.0, 0.05, 0.05, 0.997],
-        "right_arm": [0.3, 0.0, 0.0, 0.953],
-        "right_hand": [0.0, 0.1, 0.0, 0.995]
+        "spine": [0.0, 0.0, 0.0, 1.0],
+        "right_arm": [0.0, 0.0, 0.6, 0.8],
+        "right_forearm": [0.2, 0.0, 0.0, 0.98]
       },
       "bone_positions": {}
     },
     {
       "timestamp": 1.5,
       "bone_rotations": {
+        "spine": [0.0, -0.05, 0.0, 0.998],
+        "right_arm": [0.0, 0.0, 0.6, 0.8],
+        "right_forearm": [0.5, 0.0, 0.0, 0.866]
+      },
+      "bone_positions": {}
+    },
+    {
+      "timestamp": 2.0,
+      "bone_rotations": {
         "spine": [0.0, 0.0, 0.0, 1.0],
-        "head": [0.0, 0.0, 0.0, 1.0],
         "right_arm": [0.0, 0.0, 0.0, 1.0],
-        "right_hand": [0.0, 0.0, 0.0, 1.0]
+        "right_forearm": [0.0, 0.0, 0.0, 1.0]
       },
       "bone_positions": {}
     }

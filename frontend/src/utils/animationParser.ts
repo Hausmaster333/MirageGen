@@ -9,8 +9,8 @@ const BONE_MAP: Record<string, string> = {
   left_arm: 'LeftArm',
   right_hand: 'RightHand',
   left_hand: 'LeftHand',
-  right_shoulder: 'RightShoulder',
-  left_shoulder: 'LeftShoulder',
+  right_forearm: 'RightForeArm',
+  left_forearm: 'LeftForeArm',
 };
 
 interface BoneTrackData {
