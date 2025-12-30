@@ -4,30 +4,43 @@
       "timestamp": 0.0,
       "bone_rotations": {
         "spine": [0.0, 0.0, 0.0, 1.0],
+        "right_arm": [0.0, 0.0, 0.0, 1.0],
         "left_arm": [0.0, 0.0, 0.0, 1.0],
-        "right_arm": [0.0, 0.0, 0.0, 1.0]
-      },
-      "bone_positions": {}
+        "right_forearm": [0.0, 0.0, 0.0, 1.0],
+        "left_forearm": [0.0, 0.0, 0.0, 1.0]
+      }
     },
     {
       "timestamp": 0.5,
       "bone_rotations": {
-        "spine": [0.0, 0.1, 0.0, 0.995],
-        "left_arm": [0.0, 0.0, 0.2, 0.98],
-        "right_arm": [0.0, 0.0, -0.2, 0.98]
-      },
-      "bone_positions": {}
+        "spine": [0.0, 0.05, 0.0, 0.998],
+        "right_arm": [-0.2, 0.0, -0.2, 0.7],
+        "left_arm": [-0.2, 0.0, 0.2, 0.7],
+        "right_forearm": [-0.2, 0.0, 0.0, 0.5],
+        "left_forearm": [-0.2, 0.0, 0.0, 0.5]
+      }
     },
     {
       "timestamp": 1.0,
       "bone_rotations": {
+        "spine": [0.0, -0.05, 0.0, 0.998],
+        "right_arm": [-0.5, 0.0, -0.1, 0.5],
+        "left_arm": [-0.5, 0.0, 0.1, 0.5],
+        "right_forearm": [-0.6, 0.0, 0.0, 0.8],
+        "left_forearm": [-0.6, 0.0, 0.0, 0.8]
+      }
+    },
+    {
+      "timestamp": 2.5,
+      "bone_rotations": {
         "spine": [0.0, 0.0, 0.0, 1.0],
+        "right_arm": [0.0, 0.0, 0.0, 1.0],
         "left_arm": [0.0, 0.0, 0.0, 1.0],
-        "right_arm": [0.0, 0.0, 0.0, 1.0]
-      },
-      "bone_positions": {}
+        "right_forearm": [0.0, 0.0, 0.0, 1.0],
+        "left_forearm": [0.0, 0.0, 0.0, 1.0]
+      }
     }
   ],
   "emotion": "happy",
-  "duration": 1.0
+  "duration": 2.5
 }
