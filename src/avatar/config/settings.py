@@ -89,7 +89,7 @@ class APIConfig(BaseSettings):
         cors_origins: Список CORS origins.
     """
 
-    host: str = "0.0.0.0"
+    host: str = "0.0.0.0"  # noqa: S104
     port: int = 8000
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
 
@@ -142,7 +142,7 @@ class Settings(BaseSettings):
 
         try:
             # Чтение YAML
-            with open(yaml_path, encoding="utf-8") as f:
+            with Path(yaml_path).open(encoding="utf-8") as f:
                 config_dict = yaml.safe_load(f)
 
             if not config_dict:

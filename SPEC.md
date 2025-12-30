@@ -41,10 +41,12 @@ class ILLMProvider(ABC):
 ```
 
 **Реализации**:
+
 - `OllamaProvider`: Ollama (Mistral/Qwen)
 - Future: OpenAI, Anthropic, LocalLlama
 
 **Конфигурация**:
+
 ```yaml
 llm:
   provider: ollama
@@ -91,10 +93,12 @@ class ITTSEngine(ABC):
 ```
 
 **Реализации**:
+
 - `XTTSEngine`: XTTS-v2 (16 языков, включая русский)
 - `SileroEngine`: Silero TTS (native русский)
 
 **Конфигурация**:
+
 ```yaml
 tts:
   engine: xtts
@@ -133,9 +137,11 @@ class ILipSyncGenerator(ABC):
 ```
 
 **Реализации**:
+
 - `RhubarbGenerator`: Rhubarb Lip-Sync CLI wrapper
 
 **Конфигурация**:
+
 ```yaml
 lipsync:
   generator: rhubarb
@@ -173,10 +179,12 @@ class IMotionGenerator(ABC):
 ```
 
 **Реализации**:
+
 - `PresetMotionGenerator`: Preset анимации + sentiment analysis
 - Future: T2M-GPT, MotionDiffuse
 
 **Конфигурация**:
+
 ```yaml
 motion:
   generator: preset
@@ -214,6 +222,7 @@ class IPipeline(ABC):
 ```
 
 **Реализации**:
+
 - `AvatarPipeline`: Главный orchestrator
 
 ---
@@ -329,17 +338,19 @@ class ChatResponse(BaseModel):
 **Описание**: Полный пайплайн (non-streaming)
 
 **Request**:
+
 ```json
 {
   "message": "Привет, как дела?",
   "conversation_history": [
-    {"role": "user", "content": "..."},
-    {"role": "assistant", "content": "..."}
+    { "role": "user", "content": "..." },
+    { "role": "assistant", "content": "..." }
   ]
 }
 ```
 
 **Response**:
+
 ```json
 {
   "full_text": "Привет! У меня всё отлично, спасибо!",
@@ -370,6 +381,7 @@ class ChatResponse(BaseModel):
 **Описание**: Потоковая отдача фреймов
 
 **Client → Server**:
+
 ```json
 {
   "type": "chat",
@@ -378,13 +390,14 @@ class ChatResponse(BaseModel):
 ```
 
 **Server → Client** (множество сообщений):
+
 ```json
 {
   "type": "frame",
   "timestamp": 0.033,
   "text_chunk": "Привет",
-  "blendshapes": {"viseme_aa": 0.8, "viseme_PP": 0.2},
-  "motion": {"spine": [0.0, 0.0, 0.0, 1.0]}
+  "blendshapes": { "viseme_aa": 0.8, "viseme_PP": 0.2 },
+  "motion": { "spine": [0.0, 0.0, 0.0, 1.0] }
 }
 ```
 
@@ -393,8 +406,8 @@ class ChatResponse(BaseModel):
   "type": "frame",
   "timestamp": 0.066,
   "audio_chunk": "<base64_chunk>",
-  "blendshapes": {"viseme_E": 0.9},
-  "motion": {"spine": [0.0, 0.1, 0.0, 0.99]}
+  "blendshapes": { "viseme_E": 0.9 },
+  "motion": { "spine": [0.0, 0.1, 0.0, 0.99] }
 }
 ```
 
@@ -413,6 +426,7 @@ class ChatResponse(BaseModel):
 **Описание**: Проверка здоровья всех компонентов
 
 **Response**:
+
 ```json
 {
   "status": "healthy",
@@ -435,31 +449,31 @@ class ChatResponse(BaseModel):
 
 ### Python Packages
 
-| Package | Версия | Назначение |
-|---------|--------|-----------|
-| `ollama` | >=0.4.0 | LLM (Mistral/Qwen) |
-| `TTS` | >=0.22.0 | XTTS-v2 TTS |
-| `transformers` | >=4.46.0 | RuBERT sentiment |
-| `torch` | >=2.5.0 | PyTorch backend |
-| `fastapi` | >=0.115.0 | API framework |
-| `websockets` | >=13.0 | WebSocket support |
-| `pydantic` | >=2.10.0 | Data validation |
-| `librosa` | >=0.10.0 | Audio processing |
-| `loguru` | >=0.7.0 | Logging |
+| Package        | Версия    | Назначение         |
+| -------------- | --------- | ------------------ |
+| `ollama`       | >=0.4.0   | LLM (Mistral/Qwen) |
+| `TTS`          | >=0.22.0  | XTTS-v2 TTS        |
+| `transformers` | >=4.46.0  | RuBERT sentiment   |
+| `torch`        | >=2.5.0   | PyTorch backend    |
+| `fastapi`      | >=0.115.0 | API framework      |
+| `websockets`   | >=13.0    | WebSocket support  |
+| `pydantic`     | >=2.10.0  | Data validation    |
+| `librosa`      | >=0.10.0  | Audio processing   |
+| `loguru`       | >=0.7.0   | Logging            |
 
 ### Внешние инструменты
 
-| Инструмент | Тип | Установка |
-|------------|-----|-----------|
-| **Ollama** | Server | `curl -fsSL https://ollama.com/install.sh \| sh` |
-| **Mistral 7B** | Model | `ollama pull mistral:7b-instruct-q4_K_M` |
+| Инструмент           | Тип    | Установка                                                                   |
+| -------------------- | ------ | --------------------------------------------------------------------------- |
+| **Ollama**           | Server | `curl -fsSL https://ollama.com/install.sh \| sh`                            |
+| **Mistral 7B**       | Model  | `ollama pull mistral:7b-instruct-q4_K_M`                                    |
 | **Rhubarb Lip-Sync** | Binary | [GitHub Releases](https://github.com/DanielSWolf/rhubarb-lip-sync/releases) |
 
 ### Модели HuggingFace
 
-| Модель | Размер | Назначение |
-|--------|--------|-----------|
-| `coqui/XTTS-v2` | ~2GB | TTS (русский язык) |
+| Модель                                    | Размер | Назначение         |
+| ----------------------------------------- | ------ | ------------------ |
+| `coqui/XTTS-v2`                           | ~2GB   | TTS (русский язык) |
 | `blanchefort/rubert-base-cased-sentiment` | ~500MB | Sentiment analysis |
 
 ---
@@ -505,23 +519,23 @@ class ChatResponse(BaseModel):
 
 ### Целевые метрики (RTX 4070 Ti)
 
-| Метрика | Target | Описание |
-|---------|--------|----------|
-| LLM Latency | <200ms | Первый токен |
-| LLM Throughput | >30 tokens/s | Генерация |
-| TTS Latency | <500ms | Первое предложение |
-| Lipsync Processing | <1s | На 3 секунды аудио |
-| Sentiment Analysis | <100ms | На одно предложение |
-| Total Pipeline | <3s | От ввода до первого фрейма |
+| Метрика            | Target       | Описание                   |
+| ------------------ | ------------ | -------------------------- |
+| LLM Latency        | <200ms       | Первый токен               |
+| LLM Throughput     | >30 tokens/s | Генерация                  |
+| TTS Latency        | <500ms       | Первое предложение         |
+| Lipsync Processing | <1s          | На 3 секунды аудио         |
+| Sentiment Analysis | <100ms       | На одно предложение        |
+| Total Pipeline     | <3s          | От ввода до первого фрейма |
 
 ### Fallback стратегии
 
-| Компонент | Fallback | Условие |
-|-----------|----------|---------|
-| LLM | Cached responses | Ollama недоступен |
-| TTS | Silero | XTTS OOM |
-| Lipsync | Silent animation | Rhubarb error |
-| Motion | Idle animation | Sentiment error |
+| Компонент | Fallback         | Условие           |
+| --------- | ---------------- | ----------------- |
+| LLM       | Cached responses | Ollama недоступен |
+| TTS       | Silero           | XTTS OOM          |
+| Lipsync   | Silent animation | Rhubarb error     |
+| Motion    | Idle animation   | Sentiment error   |
 
 ---
 

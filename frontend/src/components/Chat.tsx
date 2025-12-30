@@ -34,16 +34,16 @@ export const Chat = () => {
             onKeyDown={handleKeyDown}
             placeholder="Спроси аватара..."
             className="
-            flex-1 
-            bg-gray-900/60 
-            text-gray-100 
-            placeholder-gray-400 
-            border border-gray-700/50 
-            rounded-xl 
-            px-5 py-3 
-            text-base 
-            focus:outline-none 
-            focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 
+            flex-1
+            bg-gray-900/60
+            text-gray-100
+            placeholder-gray-400
+            border border-gray-700/50
+            rounded-xl
+            px-5 py-3
+            text-base
+            focus:outline-none
+            focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50
             transition-all duration-200
             shadow-inner
           "
@@ -52,14 +52,14 @@ export const Chat = () => {
           <button
             onClick={handleSendMessage}
             className="
-            bg-linear-to-r from-purple-600 to-indigo-600 
-            hover:from-purple-500 hover:to-indigo-500 
-            active:scale-95 
-            text-white 
+            bg-linear-to-r from-purple-600 to-indigo-600
+            hover:from-purple-500 hover:to-indigo-500
+            active:scale-95
+            text-white
             shadow-lg shadow-purple-500/20
-            rounded-xl 
-            p-3 
-            transition-all duration-200 
+            rounded-xl
+            p-3
+            transition-all duration-200
             flex items-center justify-center
             group
           "

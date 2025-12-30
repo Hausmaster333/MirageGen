@@ -6,12 +6,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 from loguru import logger
-
-if TYPE_CHECKING:
-    from transformers import pipeline
+from transformers import pipeline
 
 
 class SentimentAnalyzer:
@@ -33,7 +31,7 @@ class SentimentAnalyzer:
             model_name: Название модели HuggingFace.
         """
         self.model_name = model_name
-        self._pipeline: pipeline | None = None
+        self._pipeline: pipeline | None = None  # pyright: ignore[reportGeneralTypeIssues]
         self._emotion_mapping = self._build_emotion_mapping()
         logger.info(f"SentimentAnalyzer initialized: model={model_name}")
 
@@ -49,7 +47,7 @@ class SentimentAnalyzer:
             "NEUTRAL": "neutral",
         }
 
-    def _load_pipeline(self) -> pipeline:
+    def _load_pipeline(self) -> pipeline:  # pyright: ignore[reportGeneralTypeIssues]
         """Lazy-loading Transformers pipeline.
 
         Returns:
@@ -63,10 +61,9 @@ class SentimentAnalyzer:
 
         try:
             logger.info(f"Loading sentiment model: {self.model_name}")
-            from transformers import pipeline
 
-            self._pipeline = pipeline(
-                "sentiment-analysis",
+            self._pipeline = pipeline(  # pyright: ignore[reportCallIssue]
+                "sentiment-analysis",  # pyright: ignore[reportArgumentType]
                 model=self.model_name,
                 device=-1,  # CPU by default
             )

@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING
 
 from loguru import logger
 
-from avatar.interfaces.motion import IMotionGenerator
 from avatar.motion.preset_loader import PresetMotionGenerator
 
 if TYPE_CHECKING:
     from avatar.config.settings import MotionConfig
+    from avatar.interfaces.motion import IMotionGenerator
 
 
 class MotionFactory:
@@ -43,6 +43,4 @@ class MotionFactory:
         # if generator == "t2m-gpt":
         #     return T2MGenerator()
 
-        raise ValueError(
-            f"Unsupported Motion generator: {generator}. " f"Supported: preset"
-        )
+        raise ValueError(f"Unsupported Motion generator: {generator}. Supported: preset")

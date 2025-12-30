@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING
 
 from loguru import logger
 
-from avatar.interfaces.llm import ILLMProvider
 from avatar.llm.ollama_provider import OllamaProvider
 
 if TYPE_CHECKING:
     from avatar.config.settings import LLMConfig
+    from avatar.interfaces.llm import ILLMProvider
 
 
 class LLMFactory:
@@ -48,6 +48,5 @@ class LLMFactory:
         #     return AnthropicProvider(api_key=config.api_key, model=config.model)
 
         raise ValueError(
-            f"Unsupported LLM provider: {provider}. "
-            f"Supported: ollama, openai (future), anthropic (future)"
+            f"Unsupported LLM provider: {provider}. Supported: ollama, openai (future), anthropic (future)"
         )

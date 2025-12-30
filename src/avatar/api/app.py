@@ -6,8 +6,6 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
@@ -16,9 +14,6 @@ from pydantic import BaseModel
 from avatar.api.middleware import setup_logging_middleware
 from avatar.api.routes import chat, stream
 from avatar.config.settings import Settings
-
-if TYPE_CHECKING:
-    from avatar.pipeline.avatar_pipeline import AvatarPipeline
 
 
 class HealthResponse(BaseModel):

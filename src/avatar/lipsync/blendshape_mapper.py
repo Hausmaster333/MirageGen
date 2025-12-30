@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from loguru import logger
 
-
 DEFAULT_RHUBARB_MAPPING = {
     "A": "viseme_aa",
     "B": "viseme_PP",

@@ -8,8 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
-from loguru import logger
+from fastapi import APIRouter, Depends, WebSocket
 
 if TYPE_CHECKING:
     from avatar.pipeline.avatar_pipeline import AvatarPipeline
@@ -29,10 +28,13 @@ def get_pipeline() -> AvatarPipeline:
     raise NotImplementedError("TODO: Implement get_pipeline dependency")
 
 
+_pipeline_dep = Depends(get_pipeline)
+
+
 @router.websocket("/stream")
 async def stream_endpoint(
     websocket: WebSocket,
-    pipeline: AvatarPipeline = Depends(get_pipeline),
+    pipeline: AvatarPipeline = _pipeline_dep,
 ) -> None:
     """WebSocket /api/v1/stream - стриминг аватар-ответа.
 

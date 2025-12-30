@@ -8,15 +8,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from loguru import logger
 
 from avatar.interfaces.motion import IMotionGenerator
 from avatar.schemas.animation_types import MotionKeyframe, MotionKeyframes
-
-if TYPE_CHECKING:
-    pass
 
 
 class PresetMotionGenerator(IMotionGenerator):
@@ -100,8 +96,7 @@ class PresetMotionGenerator(IMotionGenerator):
             logger.warning(f"Preset {preset_name} not found, trying fallback: {self.fallback_action}")
             try:
                 fallback_motion = self._load_preset(self.fallback_action)
-                fallback_motion = self._scale_duration(fallback_motion, duration)
-                return fallback_motion
+                return self._scale_duration(fallback_motion, duration)
             except Exception as e:
                 msg = f"Failed to load fallback preset {self.fallback_action}: {e}"
                 raise RuntimeError(msg) from e
@@ -152,7 +147,7 @@ class PresetMotionGenerator(IMotionGenerator):
 
         try:
             logger.debug(f"Loading preset from file: {preset_path}")
-            with open(preset_path, "r", encoding="utf-8") as f:
+            with Path(preset_path).open("r", encoding="utf-8") as f:
                 data = json.load(f)
 
             # Парсинг keyframes

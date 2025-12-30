@@ -1,7 +1,6 @@
 """Интеграционные тесты для OllamaProvider с реальным Mistral."""
-import re
+
 import pytest
-from ollama import ResponseError
 
 from avatar.llm.ollama_provider import OllamaProvider
 from avatar.schemas.llm_types import Message
@@ -15,7 +14,7 @@ async def ollama_provider():
         model="mistral:7b-instruct-q4_K_M",
         base_url="http://localhost:11434",
     )
-    
+
     # Проверить, что Ollama доступен
     try:
         is_healthy = await provider.healthcheck()
@@ -23,7 +22,7 @@ async def ollama_provider():
             pytest.skip("Ollama server is not available or model not found")
     except Exception:
         pytest.skip("Cannot connect to Ollama server")
-    
+
     return provider
 
 
@@ -32,7 +31,7 @@ async def ollama_provider():
 async def test_ollama_healthcheck(ollama_provider):
     """Тест: проверка доступности Ollama и модели Mistral."""
     is_healthy = await ollama_provider.healthcheck()
-    
+
     assert is_healthy is True, "Ollama healthcheck failed"
 
 
@@ -40,18 +39,16 @@ async def test_ollama_healthcheck(ollama_provider):
 @pytest.mark.asyncio
 async def test_ollama_generate_simple(ollama_provider):
     """Тест: простая генерация текста."""
-    messages = [
-        Message(role="user", content="Привет! Как дела?")
-    ]
-    
+    messages = [Message(role="user", content="Привет! Как дела?")]
+
     response = await ollama_provider.generate(messages, temperature=0.7, max_tokens=100)
-    
+
     # Проверки
     assert response.text is not None
     assert len(response.text) > 0, "Generated text is empty"
     assert response.tokens_count > 0, "Token count should be positive"
     assert response.generation_time >= 0.0, "Generation time should be non-negative"
-    
+
     print(f"\n✅ Generated: {response.text}")
     print(f"⏱️  Time: {response.generation_time:.2f}s")
     print(f"🔢 Tokens: {response.tokens_count}")
@@ -66,14 +63,14 @@ async def test_ollama_generate_with_history(ollama_provider):
         Message(role="assistant", content="Приятно познакомиться, Алекс!"),
         Message(role="user", content="Как меня зовут?"),
     ]
-    
+
     response = await ollama_provider.generate(messages, temperature=0.5, max_tokens=50)
-    
+
     assert response.text is not None
     assert len(response.text) > 0
     # Проверить, что модель помнит имя
     assert "алекс" in response.text.lower(), "Model should remember the name from context"
-    
+
     print(f"\n✅ Context-aware response: {response.text}")
 
 
@@ -81,24 +78,22 @@ async def test_ollama_generate_with_history(ollama_provider):
 @pytest.mark.asyncio
 async def test_ollama_generate_stream(ollama_provider):
     """Тест: потоковая генерация текста."""
-    messages = [
-        Message(role="user", content="Расскажи короткую историю про кота.")
-    ]
-    
+    messages = [Message(role="user", content="Расскажи короткую историю про кота.")]
+
     chunks = []
     token_count = 0
-    
+
     async for chunk in ollama_provider.generate_stream(messages, temperature=0.8, max_tokens=500):
         chunks.append(chunk)
         token_count += 1
         print(chunk, end="", flush=True)  # Печатать токены в реальном времени
-    
+
     full_text = "".join(chunks)
-    
+
     assert len(chunks) > 0, "No chunks received from stream"
     assert len(full_text) > 0, "Generated text is empty"
     assert token_count > 0, "Token count should be positive"
-    
+
     print(f"\n\n✅ Streamed {token_count} tokens")
     print(f"📝 Full text: {full_text[:100]}...")
 
@@ -108,68 +103,64 @@ async def test_ollama_generate_stream(ollama_provider):
 async def test_ollama_generate_stream_with_chunking(ollama_provider):
     """Тест: потоковая генерация с разбиением на чанки для TTS."""
     from avatar.llm.text_chunker import TextChunker
-    
-    messages = [
-        Message(role="user", content="Расскажи короткую историю про кота.")
-    ]
-    
+
+    messages = [Message(role="user", content="Расскажи короткую историю про кота.")]
+
     # Создать chunker
     chunker = TextChunker(mode="hybrid", max_words=10, min_words=4)
-    
+
     # Получить stream от LLM
-    llm_stream = ollama_provider.generate_stream(
-        messages, temperature=0.5, max_tokens=500
-    )
-    
+    llm_stream = ollama_provider.generate_stream(messages, temperature=0.5, max_tokens=500)
+
     # Обработать stream через chunker
     tts_chunks = []
     chunk_count = 0
-    
+
     print("\n📣 TTS Chunks (ready for synthesis):\n")
     async for chunk in chunker.process_stream(llm_stream):
         chunk_count += 1
         tts_chunks.append(chunk)
-        
+
         # Проверки качества чанка
         assert len(chunk.strip()) > 0, f"Chunk {chunk_count} is empty"
         assert chunk == chunk.strip(), f"Chunk {chunk_count} has leading/trailing spaces"
-        
+
         # Проверить, что слова не обрезаны
         words = chunk.split()
         assert len(words) > 0, f"Chunk {chunk_count} has no words"
-        
+
         # Проверить, что нет неполных слов в начале/конце
         # (слова должны заканчиваться на букву или знак препинания)
         first_word = words[0]
         last_word = words[-1]
-        
+
         # Первое слово должно начинаться с буквы
-        assert first_word[0].isalpha() or first_word[0] in '«"', \
+        assert first_word[0].isalpha() or first_word[0] in '«"', (
             f"Chunk {chunk_count} starts with incomplete word: '{first_word}'"
-        
+        )
+
         # Последнее слово должно заканчиваться нормально
-        assert last_word[-1].isalpha() or last_word[-1] in '.,!?;:—–…»"', \
+        assert last_word[-1].isalpha() or last_word[-1] in '.,!?;:—–…»"', (
             f"Chunk {chunk_count} ends with incomplete word: '{last_word}'"
-        
+        )
+
         # Симуляция отправки в TTS
         print(f"[Chunk {chunk_count}] {chunk}")
         print(f"  └─ Words: {len(words)}, Chars: {len(chunk)}\n")
-    
+
     # Склейка текста с пробелами
     full_text = " ".join(tts_chunks)
-    
+
     assert len(tts_chunks) > 0, "No chunks generated"
     assert chunk_count > 0, "Chunk count should be positive"
     assert len(full_text) > 0, "Full text is empty"
-    
+
     # Проверить отсутствие двойных пробелов
     assert "  " not in full_text, "Full text contains double spaces"
-    
+
     print(f"✅ Total chunks: {chunk_count}")
     print(f"📝 Full text ({len(full_text)} chars):")
     print(f"{full_text}\n")
-
-
 
 
 @pytest.mark.integration
@@ -177,26 +168,24 @@ async def test_ollama_generate_stream_with_chunking(ollama_provider):
 async def test_ollama_stream_chunking_modes(ollama_provider):
     """Тест: сравнение разных режимов chunking."""
     from avatar.llm.text_chunker import TextChunker
-    
-    messages = [
-        Message(role="user", content="Расскажи про космос. Что такое черная дыра?")
-    ]
-    
+
+    messages = [Message(role="user", content="Расскажи про космос. Что такое черная дыра?")]
+
     modes = ["words", "punctuation", "hybrid"]
-    
+
     for mode in modes:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Mode: {mode}")
-        print(f"{'='*60}\n")
-        
+        print(f"{'=' * 60}\n")
+
         chunker = TextChunker(mode=mode, max_words=6)
         llm_stream = ollama_provider.generate_stream(messages, temperature=0.7, max_tokens=100)
-        
+
         chunks = []
         async for chunk in chunker.process_stream(llm_stream):
             chunks.append(chunk)
             print(f"[{mode}] {chunk}\n")
-        
+
         assert len(chunks) > 0, f"No chunks for mode {mode}"
         print(f"✅ {mode}: {len(chunks)} chunks\n")
 
@@ -205,19 +194,17 @@ async def test_ollama_stream_chunking_modes(ollama_provider):
 @pytest.mark.asyncio
 async def test_ollama_temperature_variation(ollama_provider):
     """Тест: влияние температуры на генерацию."""
-    messages = [
-        Message(role="user", content="Скажи одно слово: привет или здравствуй")
-    ]
-    
+    messages = [Message(role="user", content="Скажи одно слово: привет или здравствуй")]
+
     # Низкая температура (детерминированный)
     response_low = await ollama_provider.generate(messages, temperature=0.1, max_tokens=10)
-    
+
     # Высокая температура (креативный)
     response_high = await ollama_provider.generate(messages, temperature=1.5, max_tokens=10)
-    
+
     assert response_low.text is not None
     assert response_high.text is not None
-    
+
     print(f"\n🔵 Low temp (0.1): {response_low.text}")
     print(f"🔴 High temp (1.5): {response_high.text}")
 
@@ -226,15 +213,13 @@ async def test_ollama_temperature_variation(ollama_provider):
 @pytest.mark.asyncio
 async def test_ollama_max_tokens_limit(ollama_provider):
     """Тест: ограничение max_tokens."""
-    messages = [
-        Message(role="user", content="Расскажи длинную историю о путешествии.")
-    ]
-    
+    messages = [Message(role="user", content="Расскажи длинную историю о путешествии.")]
+
     response = await ollama_provider.generate(messages, temperature=0.7, max_tokens=20)
-    
+
     # Токенов не должно быть больше, чем max_tokens
     assert response.tokens_count <= 20, f"Token count {response.tokens_count} exceeds max_tokens=20"
-    
+
     print(f"\n✅ Generated {response.tokens_count} tokens (max: 20)")
     print(f"📝 Text: {response.text}")
 
@@ -243,16 +228,14 @@ async def test_ollama_max_tokens_limit(ollama_provider):
 @pytest.mark.asyncio
 async def test_ollama_russian_language(ollama_provider):
     """Тест: поддержка русского языка."""
-    messages = [
-        Message(role="user", content="Переведи на русский: Hello, how are you?")
-    ]
-    
+    messages = [Message(role="user", content="Переведи на русский: Hello, how are you?")]
+
     response = await ollama_provider.generate(messages, temperature=0.5, max_tokens=50)
-    
+
     # Проверить, что в ответе есть кириллица
-    has_cyrillic = any('\u0400' <= char <= '\u04FF' for char in response.text)
+    has_cyrillic = any("\u0400" <= char <= "\u04ff" for char in response.text)
     assert has_cyrillic, "Response should contain Cyrillic characters"
-    
+
     print(f"\n✅ Russian response: {response.text}")
 
 
@@ -269,7 +252,7 @@ async def test_ollama_error_handling_empty_messages(ollama_provider):
 async def test_ollama_error_handling_invalid_temperature(ollama_provider):
     """Тест: обработка ошибки при неправильной температуре."""
     messages = [Message(role="user", content="Test")]
-    
+
     with pytest.raises(ValueError, match="temperature must be between"):
         await ollama_provider.generate(messages, temperature=3.0, max_tokens=100)
 
@@ -279,7 +262,6 @@ async def test_ollama_error_handling_invalid_temperature(ollama_provider):
 async def test_ollama_error_handling_invalid_max_tokens(ollama_provider):
     """Тест: обработка ошибки при неправильном max_tokens."""
     messages = [Message(role="user", content="Test")]
-    
+
     with pytest.raises(ValueError, match="max_tokens must be between"):
         await ollama_provider.generate(messages, temperature=0.7, max_tokens=5000)
-

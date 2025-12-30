@@ -7,7 +7,7 @@ import pytest
 async def test_tts_synthesize(mock_tts):
     """Тест синтеза TTS."""
     audio = await mock_tts.synthesize("Привет!")
-    
+
     assert audio.audio_bytes == b"fake_audio"
     assert audio.sample_rate == 24000
     assert audio.format == "wav"
@@ -20,7 +20,7 @@ async def test_tts_stream(mock_tts):
     chunks = []
     async for chunk in mock_tts.synthesize_streaming("Тест"):
         chunks.append(chunk)
-    
+
     assert len(chunks) > 0
     assert chunks[0].audio_bytes == b"fake_chunk"
 

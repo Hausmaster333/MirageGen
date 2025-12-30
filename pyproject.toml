@@ -23,41 +23,34 @@ dependencies = [
     "uvicorn[standard]>=0.32.0",
     "websockets>=13.0",
     "python-multipart>=0.0.9",
-
     # Data Validation
     "pydantic>=2.10.0",
     "pydantic-settings>=2.6.0",
     "orjson>=3.10.0",
-
     # LLM
     "ollama>=0.4.0",
-
     # TTS (Silero V5)
     "omegaconf>=2.3.0",
     "ipython>=8.0.0", # Часто требуется для silero utils, даже если не используется интерактивно
-
-
     # Audio Processing
     "librosa>=0.10.0",
     "torchaudio>=2.5.0",
     "soundfile>=0.12.0",
     "pydub>=0.25.0",
     "numpy>=1.26.0",
-
     # Sentiment Analysis (русский язык)
     "transformers>=4.46.0",
     "torch>=2.5.0",
     "sentencepiece>=0.2.0",
     "accelerate>=0.34.0",  # для оптимизации Transformers
-
     # Utilities
     "loguru>=0.7.0",
     "python-dotenv>=1.0.0",
     "pyyaml>=6.0",
     "aiofiles>=24.1.0",
-
     # Optional: VRAM monitoring
     "pynvml>=11.5.0",
+    "pydub-stubs>=0.25.1.6",
 ]
 
 [project.optional-dependencies]

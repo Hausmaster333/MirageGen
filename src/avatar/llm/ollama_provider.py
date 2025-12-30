@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 import time
-from typing import TYPE_CHECKING, AsyncIterator
+from typing import TYPE_CHECKING
 
 from loguru import logger
 from ollama import AsyncClient, ResponseError
@@ -16,7 +16,7 @@ from avatar.interfaces.llm import ILLMProvider
 from avatar.schemas.llm_types import LLMResponse, Message
 
 if TYPE_CHECKING:
-    pass
+    from collections.abc import AsyncIterator
 
 
 class OllamaProvider(ILLMProvider):
@@ -33,7 +33,7 @@ class OllamaProvider(ILLMProvider):
         self,
         model: str = "mistral:7b-instruct-q4_K_M",
         base_url: str = "http://localhost:11434",
-        system_prompt: str = "Ты дружелюбный русскоязычный AI-ассистент. Ты ВСЕГДА отвечаешь ТОЛЬКО на русском языке, даже если вопрос задан на английском.",  
+        system_prompt: str = "Ты дружелюбный русскоязычный AI-ассистент. Ты ВСЕГДА отвечаешь ТОЛЬКО на русском языке, даже если вопрос задан на английском.",  # noqa: E501
     ) -> None:
         """Инициализация Ollama Provider.
 
@@ -110,10 +110,7 @@ class OllamaProvider(ILLMProvider):
             # Попытка извлечь action hint из ответа (опционально)
             action = self._extract_action_hint(text)
 
-            logger.info(
-                f"Generated response: {len(text)} chars, "
-                f"{tokens_count} tokens, {generation_time:.2f}s"
-            )
+            logger.info(f"Generated response: {len(text)} chars, {tokens_count} tokens, {generation_time:.2f}s")
 
             return LLMResponse(
                 text=text,
@@ -163,8 +160,7 @@ class OllamaProvider(ILLMProvider):
         formatted_messages = self._format_messages(messages)
 
         logger.debug(
-            f"Starting streaming generation: model={self.model}, "
-            f"temperature={temperature}, max_tokens={max_tokens}"
+            f"Starting streaming generation: model={self.model}, temperature={temperature}, max_tokens={max_tokens}"
         )
 
         token_count = 0
@@ -191,9 +187,7 @@ class OllamaProvider(ILLMProvider):
                         yield token
 
             generation_time = time.time() - start_time
-            logger.info(
-                f"Streaming completed: {token_count} tokens generated in {generation_time:.2f}s"
-            )
+            logger.info(f"Streaming completed: {token_count} tokens generated in {generation_time:.2f}s")
 
         except ResponseError as e:
             logger.error(f"Ollama streaming error: {e}")
@@ -219,7 +213,7 @@ class OllamaProvider(ILLMProvider):
 
             # Извлечение списка моделей (защита от разных форматов ответа)
             models = response.get("models", [])
-            
+
             if not models:
                 logger.warning("No models available in Ollama")
                 return False
@@ -237,16 +231,14 @@ class OllamaProvider(ILLMProvider):
                     model_name = model.model
                 else:
                     model_name = str(model)
-                
+
                 if model_name:
                     available_models.append(model_name)
 
             logger.debug(f"Available models: {available_models}")
 
             if self.model not in available_models:
-                logger.warning(
-                    f"Model {self.model} not found in available models: {available_models}"
-                )
+                logger.warning(f"Model {self.model} not found in available models: {available_models}")
                 return False
 
             logger.info(f"Healthcheck passed: model {self.model} is available")
@@ -257,10 +249,7 @@ class OllamaProvider(ILLMProvider):
             raise ConnectionError(f"Ollama server error: {e}") from e
         except Exception as e:
             logger.error(f"Ollama healthcheck failed: {e}")
-            raise ConnectionError(
-                f"Cannot connect to Ollama at {self.base_url}: {e}"
-            ) from e
-
+            raise ConnectionError(f"Cannot connect to Ollama at {self.base_url}: {e}") from e
 
     def _format_messages(self, messages: list[Message]) -> list[dict[str, str]]:
         """Преобразовать Message в формат Ollama API.

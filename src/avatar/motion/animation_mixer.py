@@ -8,8 +8,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from loguru import logger
-
 if TYPE_CHECKING:
     from avatar.schemas.animation_types import MotionKeyframe, MotionKeyframes
 

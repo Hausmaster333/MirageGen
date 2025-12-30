@@ -3,31 +3,31 @@
 from __future__ import annotations
 
 import pytest
-from pathlib import Path
 
 from avatar.config.settings import Settings
 from avatar.motion.sentiment_analyzer import SentimentAnalyzer
 from avatar.pipeline.avatar_pipeline import AvatarPipeline
 
-
 # ===== Mock-реализации =====
+
 
 class MockLLMProvider:
     """Mock LLM для тестов."""
-    
+
     async def generate(self, messages, temperature=0.7, max_tokens=512):
         from avatar.schemas.llm_types import LLMResponse
+
         return LLMResponse(
             text="Mock LLM response",
             action="happy",
             tokens_count=10,
             generation_time=0.1,
         )
-    
+
     async def generate_stream(self, messages, temperature=0.7, max_tokens=512):
         for word in ["Mock", "stream", "response"]:
             yield word + " "
-    
+
     async def healthcheck(self):
         return True
 
@@ -40,7 +40,7 @@ class MockTTSEngine:
 
         return AudioSegment(
             audio_bytes=b"fake_audio",
-            sample_rate=48000,   # Изменено на 48000
+            sample_rate=48000,  # Изменено на 48000
             format="wav",
             duration=1.0,
         )
@@ -50,7 +50,7 @@ class MockTTSEngine:
 
         yield AudioSegment(
             audio_bytes=b"fake_chunk",
-            sample_rate=48000,   # Изменено на 48000
+            sample_rate=48000,  # Изменено на 48000
             format="wav",
             duration=0.5,
         )
@@ -61,9 +61,10 @@ class MockTTSEngine:
 
 class MockLipSyncGenerator:
     """Mock Lipsync для тестов."""
-    
+
     async def generate_blendshapes(self, audio_path, recognizer="pocketSphinx"):
-        from avatar.schemas.animation_types import BlendshapeWeights, BlendshapeFrame
+        from avatar.schemas.animation_types import BlendshapeFrame, BlendshapeWeights
+
         return BlendshapeWeights(
             frames=[
                 BlendshapeFrame(timestamp=0.0, mouth_shapes={"viseme_aa": 0.8}),
@@ -71,16 +72,17 @@ class MockLipSyncGenerator:
             fps=30,
             duration=1.0,
         )
-    
+
     def get_phoneme_mapping(self):
         return {"A": "viseme_aa", "B": "viseme_PP"}
 
 
 class MockMotionGenerator:
     """Mock Motion для тестов."""
-    
+
     async def generate_motion(self, emotion, duration, action_hint=None):
-        from avatar.schemas.animation_types import MotionKeyframes, MotionKeyframe
+        from avatar.schemas.animation_types import MotionKeyframe, MotionKeyframes
+
         return MotionKeyframes(
             keyframes=[
                 MotionKeyframe(
@@ -92,12 +94,13 @@ class MockMotionGenerator:
             emotion=emotion,
             duration=duration,
         )
-    
+
     def get_available_actions(self):
         return ["idle", "happy_gesture"]
 
 
 # ===== Fixtures =====
+
 
 @pytest.fixture
 def mock_llm():

@@ -1,10 +1,12 @@
 """Тесты для PresetMotionGenerator."""
 
 import json
+import pathlib
+
 import pytest
 
-from avatar.schemas.animation_types import MotionKeyframe, MotionKeyframes
 from avatar.motion.preset_loader import PresetMotionGenerator
+from avatar.schemas.animation_types import MotionKeyframe, MotionKeyframes
 
 
 @pytest.fixture
@@ -73,7 +75,7 @@ def temp_animations_dir(tmp_path):
 
     for preset_name, preset_data in presets.items():
         preset_file = animations_dir / f"{preset_name}.json"
-        with open(preset_file, "w", encoding="utf-8") as f:
+        with pathlib.Path(preset_file).open("w", encoding="utf-8") as f:
             json.dump(preset_data, f)
 
     return animations_dir
@@ -112,9 +114,7 @@ async def test_motion_generate_all_emotions(mock_motion):
 @pytest.mark.asyncio
 async def test_motion_generate_with_action_hint(mock_motion):
     """Тест генерации motion с подсказкой действия."""
-    motion = await mock_motion.generate_motion(
-        "happy", duration=1.0, action_hint="gesture"
-    )
+    motion = await mock_motion.generate_motion("happy", duration=1.0, action_hint="gesture")
     assert motion.emotion == "happy"
     assert motion.duration == 1.0
 
@@ -149,7 +149,7 @@ async def test_motion_generate_duration_scaling(mock_motion):
     assert len(motion1.keyframes) == len(motion2.keyframes)
 
     # Проверяем масштабирование timestamps
-    for kf1, kf2 in zip(motion1.keyframes, motion2.keyframes):
+    for kf1, kf2 in zip(motion1.keyframes, motion2.keyframes, strict=False):
         assert abs(kf2.timestamp - kf1.timestamp * 2.0) < 0.01
 
 
@@ -196,7 +196,7 @@ def test_motion_load_preset_missing_file(mock_motion):
 def test_motion_load_preset_invalid_json(temp_animations_dir):
     """Тест загрузки preset с невалидным JSON."""
     invalid_file = temp_animations_dir / "invalid.json"
-    with open(invalid_file, "w") as f:
+    with pathlib.Path(invalid_file).open("w") as f:
         f.write("{invalid json")
 
     generator = PresetMotionGenerator(animations_dir=temp_animations_dir)
@@ -207,7 +207,7 @@ def test_motion_load_preset_invalid_json(temp_animations_dir):
 def test_motion_load_preset_missing_required_field(temp_animations_dir):
     """Тест загрузки preset с отсутствующими обязательными полями."""
     broken_file = temp_animations_dir / "broken.json"
-    with open(broken_file, "w") as f:
+    with pathlib.Path(broken_file).open("w") as f:
         json.dump({"keyframes": [], "duration": 1.0}, f)  # Missing 'emotion'
 
     generator = PresetMotionGenerator(animations_dir=temp_animations_dir)
@@ -280,7 +280,7 @@ def test_motion_scale_duration(mock_motion):
     assert len(scaled.keyframes) == len(original.keyframes)
 
     # Проверяем масштабирование timestamps
-    for orig_kf, scaled_kf in zip(original.keyframes, scaled.keyframes):
+    for orig_kf, scaled_kf in zip(original.keyframes, scaled.keyframes, strict=False):
         assert abs(scaled_kf.timestamp - orig_kf.timestamp * 2) < 0.01
 
 

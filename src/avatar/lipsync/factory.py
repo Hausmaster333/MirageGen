@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING
 
 from loguru import logger
 
-from avatar.interfaces.lipsync import ILipSyncGenerator
 from avatar.lipsync.rhubarb_generator import RhubarbGenerator
 
 if TYPE_CHECKING:
     from avatar.config.settings import LipSyncConfig
+    from avatar.interfaces.lipsync import ILipSyncGenerator
 
 
 class LipSyncFactory:
@@ -43,6 +43,4 @@ class LipSyncFactory:
         # if generator == "wav2lip":
         #     return Wav2LipGenerator()
 
-        raise ValueError(
-            f"Unsupported Lipsync generator: {generator}. " f"Supported: rhubarb"
-        )
+        raise ValueError(f"Unsupported Lipsync generator: {generator}. Supported: rhubarb")

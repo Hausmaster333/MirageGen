@@ -13,6 +13,7 @@ from pydub import AudioSegment as PydubSegment
 
 from avatar.schemas.audio_types import AudioSegment
 
+
 def save_audio_segment(audio: AudioSegment, output_path: Path) -> None:
     """Сохранить AudioSegment в файл.
 
@@ -37,14 +38,14 @@ def save_audio_segment(audio: AudioSegment, output_path: Path) -> None:
         if file_format not in valid_formats:
             raise ValueError(f"Unsupported format: {file_format}. Use: {valid_formats}")
 
-        with open(output_path, "wb") as f:
+        with Path(output_path).open("wb") as f:
             f.write(audio.audio_bytes)
 
         logger.debug(f"Audio saved to {output_path}")
 
     except Exception as e:
         logger.error(f"Failed to save audio to {output_path}: {e}")
-        raise IOError(f"Failed to save audio: {e}") from e
+        raise OSError(f"Failed to save audio: {e}") from e
 
 
 def load_audio_segment(audio_path: Path) -> AudioSegment:
@@ -69,7 +70,7 @@ def load_audio_segment(audio_path: Path) -> AudioSegment:
 
         # Получаем сырые данные
         buffer = io.BytesIO()
-        audio_format = "wav" # Конвертируем все в wav для унификации
+        audio_format = "wav"  # Конвертируем все в wav для унификации
         audio_data.export(buffer, format=audio_format)
         audio_bytes = buffer.getvalue()
 
@@ -77,7 +78,7 @@ def load_audio_segment(audio_path: Path) -> AudioSegment:
             audio_bytes=audio_bytes,
             sample_rate=audio_data.frame_rate,
             format=audio_format,
-            duration=audio_data.duration_seconds
+            duration=audio_data.duration_seconds,
         )
     except Exception as e:
         logger.error(f"Failed to load audio from {audio_path}: {e}")

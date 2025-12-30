@@ -18,13 +18,16 @@ interface BoneTrackData {
   values: number[];
 }
 
-export function createClip(jsonAnimation: AnimationJson, clipName: string): THREE.AnimationClip {
+export function createClip(
+  jsonAnimation: AnimationJson,
+  clipName: string
+): THREE.AnimationClip {
   const tracks: THREE.KeyframeTrack[] = [];
   const boneTracks: Record<string, BoneTrackData> = {};
 
-  jsonAnimation.keyframes.forEach((frame) => {
+  jsonAnimation.keyframes.forEach(frame => {
     const time = frame.timestamp;
-    
+
     Object.entries(frame.bone_rotations).forEach(([boneKey, quaternion]) => {
       const modelBoneName = BONE_MAP[boneKey];
       if (!modelBoneName) return;
@@ -32,7 +35,7 @@ export function createClip(jsonAnimation: AnimationJson, clipName: string): THRE
       if (!boneTracks[modelBoneName]) {
         boneTracks[modelBoneName] = { times: [], values: [] };
       }
-      
+
       boneTracks[modelBoneName].times.push(time);
       boneTracks[modelBoneName].values.push(...quaternion);
     });
@@ -47,7 +50,9 @@ export function createClip(jsonAnimation: AnimationJson, clipName: string): THRE
     tracks.push(track);
   });
 
-  const duration = jsonAnimation.duration || Math.max(...jsonAnimation.keyframes.map(k => k.timestamp));
-  
+  const duration =
+    jsonAnimation.duration ||
+    Math.max(...jsonAnimation.keyframes.map(k => k.timestamp));
+
   return new THREE.AnimationClip(clipName, duration, tracks);
 }

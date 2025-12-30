@@ -1,6 +1,8 @@
 """Тесты для реального SileroEngine с mock (безопасный вариант)."""
+
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, ANY
 import torch
 
 from avatar.tts.silero_engine import SileroEngine

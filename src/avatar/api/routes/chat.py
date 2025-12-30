@@ -8,8 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Depends, HTTPException
-from loguru import logger
+from fastapi import APIRouter, Depends
 
 from avatar.schemas.api_types import ChatRequest, ChatResponse
 
@@ -31,10 +30,13 @@ def get_pipeline() -> AvatarPipeline:
     raise NotImplementedError("TODO: Implement get_pipeline dependency")
 
 
+_pipeline_dep = Depends(get_pipeline)
+
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(
     request: ChatRequest,
-    pipeline: AvatarPipeline = Depends(get_pipeline),
+    pipeline: AvatarPipeline = _pipeline_dep,
 ) -> ChatResponse:
     """POST /api/v1/chat - генерация аватар-ответа (non-streaming).
 

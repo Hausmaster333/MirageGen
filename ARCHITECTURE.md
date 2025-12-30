@@ -29,26 +29,26 @@ hackathon-avatar-poc/
 │       │
 │       ├── llm/                      # LLM компоненты
 │       │   ├── __init__.py
-│       │   ├── factory.py 
+│       │   ├── factory.py
 │       │   ├── ollama_provider.py    # Ollama реализация
 │       │   └── prompt_templates.py   # Шаблоны промптов (ru)
 │       │
 │       ├── tts/                      # TTS движки
 │       │   ├── __init__.py
-│       │   ├── factory.py 
+│       │   ├── factory.py
 │       │   ├── xtts_engine.py        # XTTS-v2 реализация
 │       │   ├── silero_engine.py      # Silero альтернатива
 │       │   └── audio_utils.py        # Утилиты для аудио
 │       │
 │       ├── lipsync/                  # Lip-sync генераторы
 │       │   ├── __init__.py
-│       │   ├── factory.py 
+│       │   ├── factory.py
 │       │   ├── rhubarb_generator.py  # Rhubarb wrapper
 │       │   └── blendshape_mapper.py  # Mapping в Three.js формат
 │       │
 │       ├── motion/                   # Gesture/motion системы
 │       │   ├── __init__.py
-│       │   ├── factory.py 
+│       │   ├── factory.py
 │       │   ├── preset_loader.py      # Загрузка preset анимаций
 │       │   ├── sentiment_analyzer.py # RuBERT sentiment
 │       │   └── animation_mixer.py    # Mixing анимаций
@@ -221,13 +221,13 @@ Pipeline Event → Observer → WebSocket Broadcast
 
 ### Профиль памяти RTX 4070 Ti (12GB)
 
-| Компонент | VRAM | Стратегия загрузки |
-|-----------|------|-------------------|
-| Ollama (Mistral 7B 4-bit) | ~5GB | Persistent (Ollama server) |
-| XTTS-v2 | ~2GB | Lazy load при генерации |
-| RuBERT Sentiment | ~500MB | Load on startup |
-| Rhubarb | 0GB | CPU-only процесс |
-| **Total Peak** | **~7.5GB** | **Buffer: 4.5GB** |
+| Компонент                 | VRAM       | Стратегия загрузки         |
+| ------------------------- | ---------- | -------------------------- |
+| Ollama (Mistral 7B 4-bit) | ~5GB       | Persistent (Ollama server) |
+| XTTS-v2                   | ~2GB       | Lazy load при генерации    |
+| RuBERT Sentiment          | ~500MB     | Load on startup            |
+| Rhubarb                   | 0GB        | CPU-only процесс           |
+| **Total Peak**            | **~7.5GB** | **Buffer: 4.5GB**          |
 
 ### Оптимизации
 
@@ -243,22 +243,22 @@ Pipeline Event → Observer → WebSocket Broadcast
 ```yaml
 llm:
   provider: ollama
-  model: mistral:7b-instruct-q4_K_M  # или qwen:7b
+  model: mistral:7b-instruct-q4_K_M # или qwen:7b
   base_url: http://localhost:11434
   temperature: 0.7
   max_tokens: 512
   system_prompt_ru: "Ты дружелюбный помощник..."
 
 tts:
-  engine: xtts  # xtts | silero
+  engine: xtts # xtts | silero
   language: ru
-  speaker_wav: null  # путь для voice cloning
+  speaker_wav: null # путь для voice cloning
   speed: 1.0
 
 lipsync:
   generator: rhubarb
   rhubarb_path: assets/rhubarb/rhubarb
-  recognizer: pocketSphinx  # pocketSphinx | phonetic
+  recognizer: pocketSphinx # pocketSphinx | phonetic
 
 motion:
   generator: preset

@@ -8,15 +8,18 @@ Lazy-loading для экономии VRAM (~2GB при загрузке).
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, AsyncIterator
+from typing import TYPE_CHECKING
 
 from loguru import logger
 
 from avatar.interfaces.tts import ITTSEngine
-from avatar.schemas.audio_types import AudioSegment
 
 if TYPE_CHECKING:
-    from TTS.api import TTS
+    from collections.abc import AsyncIterator
+
+    from TTS.api import TTS  # pyright: ignore[reportMissingTypeStubs]
+
+    from avatar.schemas.audio_types import AudioSegment
 
 
 class XTTSEngine(ITTSEngine):

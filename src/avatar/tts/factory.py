@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 from loguru import logger
 
-from avatar.interfaces.tts import ITTSEngine
 from avatar.tts.silero_engine import SileroEngine
 
 # XTTSEngine удален из импортов, так как библиотека исключена
@@ -14,6 +13,7 @@ from avatar.tts.silero_engine import SileroEngine
 
 if TYPE_CHECKING:
     from avatar.config.settings import TTSConfig
+    from avatar.interfaces.tts import ITTSEngine
 
 
 class TTSFactory:
@@ -45,19 +45,11 @@ class TTSFactory:
             sample_rate = getattr(config, "sample_rate", 48000)
             device = getattr(config, "device", "cpu")
 
-            return SileroEngine(
-                language=config.language,
-                speaker=speaker,
-                sample_rate=sample_rate,
-                device=device
-            )
+            return SileroEngine(language=config.language, speaker=speaker, sample_rate=sample_rate, device=device)
 
         # Если вдруг захотим вернуть XTTS, код будет здесь,
         # но сейчас мы не импортируем класс, чтобы не ломать сборку без пакета coqui-tts
         if engine_type == "xtts":
             raise NotImplementedError("XTTS engine is disabled in this build.")
 
-        raise ValueError(
-            f"Unsupported TTS engine: {engine_type}. "
-            f"Supported: silero"
-        )
+        raise ValueError(f"Unsupported TTS engine: {engine_type}. Supported: silero")

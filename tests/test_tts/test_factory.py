@@ -1,9 +1,12 @@
 """Тесты для TTSFactory."""
-import pytest
-from avatar.tts.factory import TTSFactory
-from avatar.config.settings import TTSConfig
-from avatar.tts.silero_engine import SileroEngine
+
 from unittest.mock import Mock
+
+import pytest
+
+from avatar.config.settings import TTSConfig
+from avatar.tts.factory import TTSFactory
+from avatar.tts.silero_engine import SileroEngine
 
 
 def test_create_silero():

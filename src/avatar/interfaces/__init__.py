@@ -9,8 +9,8 @@ from avatar.interfaces.pipeline import IPipeline
 from avatar.interfaces.tts import ITTSEngine
 
 __all__ = [
-    "ILipSyncGenerator",
     "ILLMProvider",
+    "ILipSyncGenerator",
     "IMotionGenerator",
     "IPipeline",
     "ITTSEngine",

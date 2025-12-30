@@ -6,4 +6,4 @@ from avatar.tts.silero_engine import SileroEngine
 # XTTSEngine удален (почти)
 # from avatar.tts.xtts_engine import XTTSEngine
 
-__all__ = ["TTSFactory", "SileroEngine"]
+__all__ = ["SileroEngine", "TTSFactory"]

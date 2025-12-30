@@ -18,6 +18,7 @@ ENGLISH_SYSTEM_PROMPT = """You are a friendly AI assistant.
 Answer concisely and naturally.
 Use emotional expressions when appropriate."""
 
+
 def get_system_prompt(language: str = "ru") -> str:
     """Получить системный промпт для языка.
 
@@ -36,8 +37,6 @@ def get_system_prompt(language: str = "ru") -> str:
     }
 
     if language not in prompts:
-        raise ValueError(
-            f"Unsupported language: {language}. Supported: {list(prompts.keys())}"
-        )
+        raise ValueError(f"Unsupported language: {language}. Supported: {list(prompts.keys())}")
 
     return prompts[language]

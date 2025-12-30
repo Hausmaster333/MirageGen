@@ -1,23 +1,23 @@
 import io
 import wave
-import pytest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from avatar.schemas.audio_types import AudioSegment
 from avatar.tts.audio_utils import (
-    save_audio_segment,
+    convert_sample_rate,
     load_audio_segment,
     normalize_audio,
-    convert_sample_rate
+    save_audio_segment,
 )
-from unittest.mock import patch
-from unittest.mock import MagicMock
 
 
 def test_normalize_logic_mocked():
     """Тест успешной нормализации с моком Pydub."""
     # Мокаем класс PydubSegment
-    with patch("avatar.tts.audio_utils.PydubSegment") as MockSegment:
+    with patch("avatar.tts.audio_utils.PydubSegment") as MockSegment:  # noqa: N806
         # Настраиваем мок инстанса сегмента
         mock_instance = MagicMock()
         mock_instance.dBFS = -10.0  # Текущая громкость
@@ -37,6 +37,7 @@ def test_normalize_logic_mocked():
 
         # Вызываем функцию
         from avatar.tts.audio_utils import normalize_audio
+
         result = normalize_audio(b"input_audio", target_db=-20.0)
 
         # Проверки
@@ -53,17 +54,20 @@ def test_normalize_exception():
         # Должен вернуть исходные байты и не упасть
         assert res == b"any_bytes"
 
+
 # Хелпер для создания валидного WAV
 def create_wav_bytes(rate=24000):
     buf = io.BytesIO()
-    with wave.open(buf, 'wb') as wav_file:
+    with wave.open(buf, "wb") as wav_file:
         wav_file.setnchannels(1)
         wav_file.setsampwidth(2)
         wav_file.setframerate(rate)
-        wav_file.writeframes(b'\x00\x00' * 100)
+        wav_file.writeframes(b"\x00\x00" * 100)
     return buf.getvalue()
 
+
 # --- Тесты save_audio_segment ---
+
 
 def test_save_audio_success(tmp_path):
     audio = AudioSegment(audio_bytes=b"fake", sample_rate=24000, format="wav", duration=1.0)
@@ -89,7 +93,9 @@ def test_save_audio_io_error(tmp_path):
     with pytest.raises(IOError):
         save_audio_segment(audio, path)
 
+
 # --- Тесты load_audio_segment ---
+
 
 def test_load_audio_success(tmp_path):
     wav_bytes = create_wav_bytes()
@@ -100,9 +106,11 @@ def test_load_audio_success(tmp_path):
     assert seg.sample_rate == 24000
     assert len(seg.audio_bytes) > 0
 
+
 def test_load_audio_not_found():
     with pytest.raises(FileNotFoundError):
         load_audio_segment(Path("non_existent.wav"))
+
 
 def test_load_audio_corrupted(tmp_path):
     path = tmp_path / "bad.wav"
@@ -112,12 +120,15 @@ def test_load_audio_corrupted(tmp_path):
     with pytest.raises(ValueError):
         load_audio_segment(path)
 
+
 # --- Тесты convert_sample_rate ---
+
 
 def test_convert_rate_same():
     b = b"data"
     # Если частоты совпадают, возвращает то же самое
     assert convert_sample_rate(b, 24000, 24000) == b
+
 
 def test_convert_rate_success():
     # Реальная конвертация (требует ffmpeg)
@@ -126,12 +137,15 @@ def test_convert_rate_success():
     assert res != src
     assert len(res) > 0
 
+
 def test_convert_rate_error():
     # Передаем мусор, pydub должен упасть
     with pytest.raises(ValueError):
         convert_sample_rate(b"junk", 24000, 16000)
 
+
 # --- Тесты normalize_audio ---
+
 
 def test_normalize_error():
     # При ошибке возвращает исходные байты
