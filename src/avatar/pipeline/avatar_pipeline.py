@@ -10,9 +10,9 @@ import asyncio
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, AsyncIterator
-
+import tempfile
 from loguru import logger
-
+from avatar.schemas.audio_types import AudioSegment
 from avatar.interfaces.lipsync import ILipSyncGenerator
 from avatar.interfaces.llm import ILLMProvider
 from avatar.interfaces.motion import IMotionGenerator
@@ -96,29 +96,23 @@ class AvatarPipeline(IPipeline):
         # Обработать через LLM → TTS → Lipsync → Motion
         async for text_chunk in self._process_llm_stream(messages):
             try:
-                # 1. Синтезировать аудио
-                audio_bytes, duration = await self._process_tts_chunk(text_chunk)
-                
-                # 2. Генерировать blendshapes (stub - реализуете позже)
-                # blendshapes = await self._process_lipsync(audio_path)
-                
-                # 3. Генерировать motion (stub - реализуете позже)
-                # Сначала через sentiment_analyze получаем emotion, а duration выше получаем
-                # motion = await self._process_motion(emotion, duration)
-                
-                # 4. Создать AvatarFrame
+                # 1. TTS → получаем AudioSegment
+                audio_segment = await self.tts_engine.synthesize(text_chunk)
+                audio_bytes = audio_segment.audio_bytes
+
+                # 2. Lipsync → используем AudioSegment напрямую
+                blendshapes = await self._process_lipsync(audio_segment)
+
+                # 3. Frame для API
                 frame = AvatarFrame(
                     text=text_chunk,
                     audio=audio_bytes,
-                    # blendshapes=blendshapes,  # TODO
-                    # motion=motion,  # TODO
+                    blendshapes=blendshapes,
                 )
-                
                 yield frame
-                
+
             except Exception as e:
                 logger.error(f"Failed to process chunk: {e}")
-                # Можно пропустить проблемный чанк или прервать
                 raise RuntimeError(f"Pipeline error: {e}") from e
 
     async def healthcheck(self) -> dict[str, bool]:
@@ -180,35 +174,56 @@ class AvatarPipeline(IPipeline):
             bytes: Аудио-байты.
         """
         logger.debug(f"Synthesizing TTS for chunk: {text_chunk[:50]}...")
-        
         try:
-            # Синтезировать аудио
-            audio_segment = await self.tts_engine.synthesize(
-                text=text_chunk,
-                language="ru",
-            )
-            
-            logger.debug(
-                f"TTS synthesis completed: {audio_segment.duration:.2f}s, "
-                f"{len(audio_segment.audio_bytes)} bytes"
-            )
-            
-            return audio_segment.audio_bytes, audio_segment.duration
-            
+            audio_segment = await self.tts_engine.synthesize(text_chunk)
+            logger.debug(f"TTS synthesis completed: {audio_segment.duration:.2f}s")
+            return audio_segment.audio_bytes  # Возвращаем байты для API
         except Exception as e:
             logger.error(f"TTS synthesis failed: {e}")
             raise RuntimeError(f"TTS error: {e}") from e
 
-    async def _process_lipsync(self, audio_path: Path) -> dict[str, float]:
-        """Генерация blendshapes для аудио.
+
+
+    async def _process_lipsync(self, audio_segment: AudioSegment) -> dict[str, float]:
+        """Генерация blendshapes для аудио из байтов.
 
         Args:
-            audio_path: Путь к аудио-файлу.
+            audio_segment: AudioSegment с байтами WAV.
 
         Returns:
-            dict[str, float]: Blendshape weights.
+            dict[str, float]: Blendshape weights (например, {"jawOpen": 0.8, "lipSync": 0.3}).
         """
-        raise NotImplementedError("TODO: Implement _process_lipsync")
+        logger.debug(f"Generating lipsync for audio: {audio_segment.duration:.2f}s")
+
+        try:
+            # 1. Создаем временный WAV файл
+            with tempfile.NamedTemporaryFile(
+                    suffix=".wav",
+                    delete=False  # НЕ удаляем автоматически, сами управляем
+            ) as temp_file:
+                temp_path = Path(temp_file.name)
+                # Сохраняем наши байты во временный файл
+                from avatar.tts.audio_utils import save_audio_segment
+                save_audio_segment(audio_segment, temp_path)
+
+            logger.debug(f"Temporary audio saved to: {temp_path}")
+
+            # 2. Вызываем lipsync генератор (Rhubarb или что у вас там)
+            blendshapes = await self.lipsync_generator.generate(temp_path)
+
+            logger.debug(f"Lipsync generated: {len(blendshapes)} blendshapes")
+            return blendshapes
+
+        except Exception as e:
+            logger.error(f"Lipsync processing failed: {e}")
+            # Возвращаем пустые blendshapes при ошибке (аватар не будет двигать губами)
+            return {}
+
+        finally:
+            # 3. ОБЯЗАТЕЛЬНО удаляем временный файл
+            if temp_path.exists():
+                temp_path.unlink()
+                logger.debug("Temporary audio file cleaned up")
 
     async def _process_motion(self, emotion: str, duration: float) -> dict:
         """Генерация motion для эмоции.
