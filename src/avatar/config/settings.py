@@ -44,7 +44,7 @@ class TTSConfig(BaseSettings):
         speed: Скорость синтеза.
     """
 
-    engine: Literal["xtts", "silero"] = "xtts"
+    engine: Literal["xtts", "silero"] = "silero"
     language: str = "ru"
     speaker_wav: str | None = None
     speed: float = Field(default=1.0, ge=0.5, le=2.0)

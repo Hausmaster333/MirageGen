@@ -17,7 +17,7 @@ from avatar.interfaces.tts import ITTSEngine
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
-    from TTS.api import TTS  # pyright: ignore[reportMissingTypeStubs]
+    from TTS.api import TTS  # pyright: ignore[reportMissingTypeStubs, reportMissingImports]
 
     from avatar.schemas.audio_types import AudioSegment
 
