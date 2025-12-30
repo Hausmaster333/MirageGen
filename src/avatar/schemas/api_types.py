@@ -3,16 +3,11 @@
 Используются в REST/WebSocket эндпоинтах, как это задано в SPEC.md.
 """
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
 from pydantic import BaseModel, Field
 
-if TYPE_CHECKING:
-    from avatar.schemas.animation_types import BlendshapeWeights, MotionKeyframes
-    from avatar.schemas.audio_types import AudioSegment
-    from avatar.schemas.llm_types import Message
+from avatar.schemas.animation_types import BlendshapeWeights, MotionKeyframes
+from avatar.schemas.audio_types import AudioSegment
+from avatar.schemas.llm_types import Message
 
 
 class ChatRequest(BaseModel):
