@@ -31,12 +31,8 @@ uv sync
 # Linux
 wget https://github.com/DanielSWolf/rhubarb-lip-sync/releases/download/v1.13.0/Rhubarb-Lip-Sync-1.13.0-Linux.zip
 unzip Rhubarb-Lip-Sync-1.13.0-Linux.zip -d assets/rhubarb/
-<<<<<<< HEAD
 mv assets/rhubarb/Rhubarb-Lip-Sync-1.13.0-Linux/rhubarb assets/rhubarb
 chmod +x assets/rhubarb/rhubarb
-=======
-chmod + x assets/rhubarb/rhubarb
->>>>>>> 5ca46e2 (fix(docs): rhubarb installation)
 ```
 
 ### 3. Запуск
