@@ -8,7 +8,7 @@
 
 ```bash
 # Установить uv
-curl -LsSf https://astral.sh/uv/install.sh | sh 
+curl -LsSf https://astral.sh/uv/install.sh | sh
 # или
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex" # для Windows
 # Установить Ollama
@@ -22,8 +22,10 @@ ollama pull mistral:7b-instruct-q4_K_M # Также пока не надо дл�
 uv sync
 ```
 
-### 2. Скачать Rhubarb 
+### 2. Скачать Rhubarb
+
 Это также пока не требуется для тестов
+
 ```bash
 
 # Linux
@@ -42,6 +44,7 @@ uv run avatar-server
 
 # localhost:8000/docs для проверки
 ```
+
 ### 4. Тесты
 
 ```bash
@@ -76,4 +79,44 @@ uv run pytest tests/test_llm/test_ollama_integration.py -v -s -m integration
 ├── src/avatar/              # Основной код
 ├── assets/                  # Статические ресурсы
 └── tests/                   # Тесты
+```
+
+---
+
+## 🧪 Тестирование и разработка
+
+### Pre-commit Hooks
+
+```
+uv tool install pre-commit --with pre-commit-uv --force-reinstall
+uv tool run pre-commit install
+```
+
+### Форматирование кода
+
+Проект использует **just** для автоматизации задач.
+
+**Установка just:**
+
+```
+# macOS
+brew install just
+
+# Linux
+cargo install just
+
+# Windows
+scoop install just
+```
+
+**Запуск форматирования:**
+
+```
+just format
+```
+
+**Запуск линтинга и автоисправлений (ruff):**
+
+```
+just lint
 ```
