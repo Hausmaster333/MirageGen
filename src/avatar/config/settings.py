@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import sys
 import warnings
 from pathlib import Path
 from typing import Literal
@@ -54,6 +55,9 @@ class TTSConfig(BaseSettings):
     speed: float = Field(default=1.0, ge=0.5, le=2.0)
 
 
+_RHUBARB_PATH = Path("assets/rhubarb/rhubarb.exe") if sys.platform == "win32" else Path("assets/rhubarb/rhubarb")
+
+
 class LipSyncConfig(BaseSettings):
     """Настройки Lip-Sync генератора.
 
@@ -64,7 +68,7 @@ class LipSyncConfig(BaseSettings):
     """
 
     generator: Literal["rhubarb"] = "rhubarb"
-    rhubarb_path: Path = Path("assets/rhubarb/rhubarb.exe")
+    rhubarb_path: Path = _RHUBARB_PATH
     recognizer: Literal["pocketSphinx", "phonetic"] = "phonetic"
 
 
