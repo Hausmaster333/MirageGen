@@ -1,20 +1,14 @@
-// === src/components/Scene.tsx ===
 import { Environment } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { Avatar } from './Avatar';
-import type { ChatResponse } from '../types';
+import type { StreamFrame } from '../types';
 
 interface SceneProps {
-  lastResponse: ChatResponse | null;
+  streamData: StreamFrame | null;
   isThinking: boolean;
-  onAnimationEnd?: () => void;
 }
 
-export function Scene({
-  lastResponse,
-  isThinking,
-  onAnimationEnd,
-}: SceneProps) {
+export function Scene({ streamData, isThinking }: SceneProps) {
   return (
     <div className="flex-1 relative min-h-0">
       <Canvas camera={{ position: [0, 0, 1.5], fov: 50 }}>
@@ -22,11 +16,8 @@ export function Scene({
         <directionalLight position={[5, 5, 5]} intensity={1} />
         <Environment preset="city" />
         <group position={[0, -1.6, 0]}>
-          <Avatar
-            lastResponse={lastResponse}
-            isThinking={isThinking}
-            onAnimationEnd={onAnimationEnd}
-          />
+          {/* Передаем потоковые данные в Аватар */}
+          <Avatar streamData={streamData} isThinking={isThinking} />
         </group>
       </Canvas>
     </div>

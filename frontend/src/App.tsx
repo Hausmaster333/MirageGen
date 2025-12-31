@@ -1,29 +1,21 @@
 import { useState } from 'react';
 import { Scene } from './components/Scene';
 import { Chat } from './components/Chat';
-import { type ChatResponse } from './types';
+import type { StreamFrame } from './types';
 
 export default function App() {
-  // Храним последний ответ от API для проигрывания
-  const [lastResponse, setLastResponse] = useState<ChatResponse | null>(null);
-
-  // Флаг, говорит аватару "думать" (пока идет запрос)
+  const [streamData, setStreamData] = useState<StreamFrame | null>(null);
   const [isThinking, setIsThinking] = useState(false);
+
+  const handleStreamFrame = (frame: StreamFrame) => {
+    setStreamData({ ...frame });
+  };
 
   return (
     <div className="flex flex-col h-screen w-screen bg-gray-900 overflow-hidden">
-      {/* Передаем данные в сцену */}
-      <Scene
-        lastResponse={lastResponse}
-        isThinking={isThinking}
-        onAnimationEnd={() => setLastResponse(null)} // Сброс после окончания
-      />
+      <Scene streamData={streamData} isThinking={isThinking} />
 
-      {/* Чат обновляет эти данные */}
-      <Chat
-        onResponse={resp => setLastResponse(resp)}
-        onLoading={loading => setIsThinking(loading)}
-      />
+      <Chat onStreamFrame={handleStreamFrame} onLoading={setIsThinking} />
     </div>
   );
 }

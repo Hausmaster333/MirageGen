@@ -48,7 +48,7 @@ coverage.xml
 .env
 .env.local
 .env.*.local
-.rhubarb
+
 # Logs
 logs/
 *.log
@@ -58,10 +58,9 @@ logs/
 Thumbs.db
 
 # Project-specific
-assets/rhubarb/rhubarb*  # Бинарь Rhubarb (скачивается отдельно)
 models/                   # Загруженные ML-модели (HuggingFace)
 assets/silero/
-
+assets/rhubarb # Бинарь Rhubarb (скачивается отдельно)
 # Временные файлы
 *.tmp
 *.bak

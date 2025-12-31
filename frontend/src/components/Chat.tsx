@@ -1,54 +1,88 @@
-import { useState, type KeyboardEvent } from 'react';
-import type { Message, ChatResponse } from '../types';
+import { useState, type KeyboardEvent, useRef, useEffect } from 'react';
+import type { Message, StreamFrame } from '../types';
 
 interface ChatProps {
-  onResponse: (response: ChatResponse) => void;
+  onStreamFrame: (frame: StreamFrame) => void;
   onLoading: (isLoading: boolean) => void;
 }
 
-export const Chat = ({ onResponse, onLoading }: ChatProps) => {
+export const Chat = ({ onStreamFrame, onLoading }: ChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const API_URL = import.meta.env.VITE_API_URL;
-  const handleSendMessage = async () => {
+
+  const socketRef = useRef<WebSocket | null>(null);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+  useEffect(() => {
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+    };
+  }, []);
+
+  const handleSendMessage = () => {
     if (!inputValue.trim() || isLoading) return;
 
     const userText = inputValue;
     setMessages(prev => [...prev, { text: userText, sender: 'user' }]);
     setInputValue('');
-
     setIsLoading(true);
     onLoading(true);
 
-    try {
-      const res = await fetch(`${API_URL}/api/v1/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userText }),
-      });
+    setMessages(prev => [...prev, { text: '', sender: 'bot' }]);
 
-      if (!res.ok) throw new Error('API Error');
+    const wsUrl = API_URL.replace(/^http/, 'ws') + '/api/v1/stream';
+    const ws = new WebSocket(wsUrl);
+    socketRef.current = ws;
 
-      const data: ChatResponse = await res.json();
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ type: 'chat', message: userText }));
+    };
 
-      setMessages(prev => [...prev, { text: data.full_text, sender: 'bot' }]);
-      onResponse(data);
-    } catch (error) {
-      console.error(error);
-      setMessages(prev => [
-        ...prev,
-        { text: 'Ошибка связи с сервером :(', sender: 'bot' },
-      ]);
-    } finally {
+    ws.onmessage = event => {
+      const data: StreamFrame = JSON.parse(event.data);
+
+      if (data.type === 'frame') {
+        onStreamFrame(data);
+
+        if (data.text_chunk) {
+          setMessages(prev => {
+            const newArr = [...prev];
+            const lastMsg = newArr[newArr.length - 1];
+            if (lastMsg.sender === 'bot') {
+              lastMsg.text += data.text_chunk;
+            }
+            return newArr;
+          });
+        }
+      } else if (data.type === 'done') {
+        setIsLoading(false);
+        onLoading(false);
+        ws.close();
+      } else if (data.type === 'error') {
+        console.error('WS Error:', data);
+        setIsLoading(false);
+        onLoading(false);
+      }
+    };
+
+    ws.onerror = e => {
+      console.error('WebSocket connection error', e);
       setIsLoading(false);
       onLoading(false);
-    }
+    };
+
+    ws.onclose = () => {
+      // Cleanup if needed
+    };
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') handleSendMessage();
   };
+
   return (
     <div className="w-full max-w-2xl mx-auto p-6 z-10 mb-8">
       <div className="bg-gray-800/40 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-white/10 ring-1 ring-white/5">

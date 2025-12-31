@@ -58,3 +58,13 @@ export interface ChatResponse {
   motion: MotionKeyframes;
   processing_time: number;
 }
+
+export interface StreamFrame {
+  type: 'frame' | 'done' | 'error';
+  timestamp?: number;
+  text_chunk?: string;
+  audio_chunk?: string;
+  blendshapes?: Record<string, number>;
+  motion?: Record<string, number[]>;
+  full_text?: string;
+}

@@ -1,34 +1,76 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { createClip } from '../utils/animationParser';
-import type { ChatResponse, AnimationJson } from '../types';
+import type { StreamFrame, AnimationJson } from '../types';
 
 import idleJson from '../assets/idle.json';
 import thinkingJson from '../assets/thinking_gesture.json';
 
 interface AvatarProps {
-  lastResponse: ChatResponse | null;
+  streamData: StreamFrame | null;
   isThinking: boolean;
-  onAnimationEnd?: () => void;
 }
 
-export function Avatar({
-  lastResponse,
-  isThinking,
-  onAnimationEnd,
-}: AvatarProps) {
-  const { scene, nodes } = useGLTF('/models/avatar.glb'); // nodes нужны для morph targets
+interface QueueItem {
+  audioUrl: string;
+  duration: number;
+  blendshapes: Record<string, number>;
+  motion?: Record<string, number[]>;
+}
+
+const BONE_MAPPING: Record<string, string> = {
+  hips: 'Hips',
+  spine: 'Spine',
+  chest: 'Spine1',
+  upper_chest: 'Spine2',
+  neck: 'Neck',
+  head: 'Head',
+
+  right_shoulder: 'RightShoulder',
+  right_arm: 'RightArm',
+  right_forearm: 'RightForeArm',
+  right_hand: 'RightHand',
+
+  left_shoulder: 'LeftShoulder',
+  left_arm: 'LeftArm',
+  left_forearm: 'LeftForeArm',
+  left_hand: 'LeftHand',
+
+  right_up_leg: 'RightUpLeg',
+  right_leg: 'RightLeg',
+  right_foot: 'RightFoot',
+  left_up_leg: 'LeftUpLeg',
+  left_leg: 'LeftLeg',
+  left_foot: 'LeftFoot',
+};
+
+const ARM_BONES = [
+  'RightArm',
+  'LeftArm',
+  'RightForeArm',
+  'LeftForeArm',
+  'RightHand',
+  'LeftHand',
+];
+
+export function Avatar({ streamData, isThinking }: AvatarProps) {
+  const { scene, nodes } = useGLTF('/models/avatar_g.glb');
   const group = useRef<THREE.Group>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const audioRef = useRef<HTMLAudioElement>(new Audio());
+  const queue = useRef<QueueItem[]>([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const targetVisemes = useRef<Record<string, number>>({});
+  const targetRotations = useRef<Record<string, THREE.Quaternion>>({});
 
   const { actions, mixer } = useAnimations<THREE.AnimationClip>(
     [],
     group
   ) as any;
 
-  // 1. Создаем дефолтные клипы (Idle, Thinking)
   useEffect(() => {
     const defaultClips = [
       createClip(idleJson as AnimationJson, 'idle'),
@@ -40,140 +82,162 @@ export function Avatar({
       actions[clip.name] = action;
     });
 
-    // Запускаем Idle по умолчанию
     actions.idle?.reset().play();
 
     return () => mixer.stopAllAction();
   }, [mixer, actions]);
 
-  // 2. Управление состояниями (Idle / Thinking)
-  useEffect(() => {
-    if (lastResponse) return; // Если есть ответ, мы играем его анимацию, игнорируем это
-
-    const fadeDuration = 0.5;
-
-    if (isThinking) {
-      actions.idle?.fadeOut(fadeDuration);
-      actions.thinking?.reset().fadeIn(fadeDuration).play();
-    } else {
-      actions.thinking?.fadeOut(fadeDuration);
-      actions.idle?.reset().fadeIn(fadeDuration).play();
-    }
-  }, [isThinking, lastResponse, actions]);
-
-  // 3. Обработка ОТВЕТА (ChatResponse)
-  useEffect(() => {
-    if (!lastResponse) return;
-
-    // A. Создаем клип для скелетной анимации из ответа
-    // Нам нужно привести MotionKeyframes к формату AnimationJson для нашего парсера
-    const motionJson: AnimationJson = {
-      keyframes: lastResponse.motion.keyframes.map(k => ({
-        timestamp: k.timestamp,
-        bone_rotations: k.bone_rotations as any, // Приведение типов если нужно
-        bone_positions: k.bone_positions as any,
-      })),
-      emotion: lastResponse.motion.emotion,
-      duration: lastResponse.motion.duration,
-    };
-
-    const clipName = `response-${Date.now()}`;
-    const clip = createClip(motionJson, clipName);
-
-    // Останавливаем текущие (idle/thinking)
-    actions.idle?.fadeOut(0.5);
-    actions.thinking?.fadeOut(0.5);
-
-    // Запускаем новую эмоцию
-    const action = mixer.clipAction(clip, group.current!);
-    actions[clipName] = action;
-
-    // Ставим LoopOnce (один раз), а потом clamp (застыть) или вернуться в idle
-    action.setLoop(THREE.LoopOnce, 1);
-    action.clampWhenFinished = true;
-    action.reset().fadeIn(0.2).play();
-
-    // Слушаем окончание анимации
-    const onFinished = (e: any) => {
-      if (e.action === action) {
-        mixer.removeEventListener('finished', onFinished);
-        action.fadeOut(0.5);
-        actions.idle?.reset().fadeIn(0.5).play();
-        if (onAnimationEnd) onAnimationEnd();
-      }
-    };
-    mixer.addEventListener('finished', onFinished);
-
-    // B. Запускаем Аудио
-    if (lastResponse.audio.audio_bytes_base64) {
-      const audioSrc = `data:audio/${lastResponse.audio.format};base64,${lastResponse.audio.audio_bytes_base64}`;
-      if (!audioRef.current) audioRef.current = new Audio();
-
-      audioRef.current.src = audioSrc;
-      audioRef.current.play().catch(e => console.error('Audio play error', e));
-    }
-
-    // Cleanup при смене ответа
-    return () => {
-      action.stop();
-      mixer.removeEventListener('finished', onFinished);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-    };
-  }, [lastResponse, mixer, actions]);
-
-  // 4. LIP SYNC (Анимация рта в useFrame)
   useFrame(() => {
-    if (!lastResponse || !audioRef.current || audioRef.current.paused) {
-      // Сброс рта в нейтраль, если молчим
-      // (Тут можно добавить плавный lerp к 0)
+    const idleAction = actions.idle;
+    const thinkingAction = actions.thinking;
+
+    if (!idleAction) return;
+
+    const targetIdleWeight = isPlaying ? 0.1 : 1.0;
+
+    idleAction.weight = THREE.MathUtils.lerp(
+      idleAction.weight,
+      targetIdleWeight,
+      0.1
+    );
+
+    if (isThinking && !isPlaying) {
+      if (!thinkingAction?.isRunning()) {
+        thinkingAction?.reset().fadeIn(0.5).play();
+        idleAction.fadeOut(0.5);
+      }
+    } else {
+      if (thinkingAction?.isRunning()) {
+        thinkingAction?.fadeOut(0.5);
+        idleAction.fadeIn(0.5);
+      }
+    }
+  });
+
+  useEffect(() => {
+    if (!streamData) return;
+    if (streamData.type !== 'frame') return;
+
+    const motionData = streamData.motion;
+    const blendshapesData = streamData.blendshapes;
+
+    if (streamData.audio_chunk) {
+      const blob = b64toBlob(streamData.audio_chunk, 'audio/wav');
+      const url = URL.createObjectURL(blob);
+
+      const item: QueueItem = {
+        audioUrl: url,
+        duration: 0,
+        blendshapes: blendshapesData || {},
+        motion: motionData,
+      };
+
+      queue.current.push(item);
+
+      if (!isPlaying && audioRef.current.paused) {
+        playNext();
+      }
+    }
+  }, [streamData]);
+
+  const playNext = async () => {
+    if (queue.current.length === 0) {
+      setIsPlaying(false);
+
+      targetVisemes.current = {};
       return;
     }
 
-    const currentTime = audioRef.current.currentTime;
+    setIsPlaying(true);
+    const item = queue.current.shift()!;
 
-    // Находим текущий фрейм blendshapes
-    // Это простой линейный поиск, для длинных аудио можно оптимизировать бинарным
-    const frames = lastResponse.blendshapes.frames;
-    const currentFrame = frames.find((f, i) => {
-      const next = frames[i + 1];
-      return (
-        f.timestamp <= currentTime && (!next || next.timestamp > currentTime)
-      );
-    });
+    audioRef.current.src = item.audioUrl;
 
-    if (currentFrame && nodes.Wolf3D_Head) {
-      // Применяем веса к мешу головы
-      // ВАЖНО: У RPM голова может называться Wolf3D_Head или Wolf3D_Avatar
-      const headNode = nodes.Wolf3D_Head || nodes.Wolf3D_Avatar;
+    // Blendshapes (Visemes)
+    if (item.blendshapes) {
+      targetVisemes.current = item.blendshapes;
+    }
 
-      if (
-        headNode &&
-        'morphTargetDictionary' in headNode &&
-        'morphTargetInfluences' in headNode
-      ) {
-        const headMesh = headNode as THREE.SkinnedMesh;
+    // Motion
+    if (item.motion) {
+      Object.entries(item.motion).forEach(([boneName, quatArray]) => {
+        const mappedName = BONE_MAPPING[boneName] || boneName;
 
-        if (headMesh.morphTargetDictionary && headMesh.morphTargetInfluences) {
-          Object.entries(currentFrame.mouth_shapes).forEach(
-            ([shapeName, value]) => {
-              const index = headMesh.morphTargetDictionary![shapeName];
+        const q = new THREE.Quaternion(
+          quatArray[0],
+          quatArray[1],
+          quatArray[2],
+          quatArray[3]
+        );
+        targetRotations.current[mappedName] = q;
+      });
+    }
 
-              if (index !== undefined) {
-                const current = headMesh.morphTargetInfluences![index];
-                // Lerp для плавности
-                headMesh.morphTargetInfluences![index] = THREE.MathUtils.lerp(
-                  current,
-                  value,
-                  0.5
-                );
-              }
-            }
-          );
+    try {
+      await audioRef.current.play();
+    } catch (e) {
+      console.error('Play error', e);
+      playNext();
+    }
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    const handleEnded = () => {
+      URL.revokeObjectURL(audio.src);
+      playNext();
+    };
+    audio.addEventListener('ended', handleEnded);
+    return () => audio.removeEventListener('ended', handleEnded);
+  }, []);
+
+  useFrame((state, delta) => {
+    // Анимация лица (Blendshapes)
+    const headMesh = (nodes.Wolf3D_Head ||
+      nodes.Wolf3D_Avatar) as THREE.SkinnedMesh;
+    if (headMesh?.morphTargetDictionary && headMesh?.morphTargetInfluences) {
+      if (isPlaying) {
+        Object.entries(targetVisemes.current).forEach(([shape, value]) => {
+          const idx = headMesh.morphTargetDictionary![shape];
+          if (idx !== undefined) {
+            headMesh.morphTargetInfluences![idx] = THREE.MathUtils.lerp(
+              headMesh.morphTargetInfluences![idx],
+              value,
+              delta * 12
+            );
+          }
+        });
+      } else {
+        for (let i = 0; i < headMesh.morphTargetInfluences.length; i++) {
+          if (headMesh.morphTargetInfluences[i] > 0.01) {
+            headMesh.morphTargetInfluences[i] = THREE.MathUtils.lerp(
+              headMesh.morphTargetInfluences[i],
+              0,
+              delta * 8
+            );
+          }
         }
       }
+    }
+
+    if (isPlaying && nodes) {
+      Object.entries(targetRotations.current).forEach(
+        ([boneName, targetQuat]) => {
+          const bone = nodes[boneName] as THREE.Bone;
+          if (bone) {
+            bone.quaternion.slerp(targetQuat, delta * 8);
+          }
+        }
+      );
+    } else if (!isPlaying && nodes) {
+      Object.keys(targetRotations.current).forEach(boneName => {
+        const bone = nodes[boneName] as THREE.Bone;
+        if (bone) {
+          const identityQuat = new THREE.Quaternion(0, 0, 0, 1);
+
+          bone.quaternion.slerp(identityQuat, delta * 5);
+        }
+      });
     }
   });
 
@@ -182,4 +246,19 @@ export function Avatar({
       <primitive object={scene} />
     </group>
   );
+}
+
+function b64toBlob(b64Data: string, contentType = '', sliceSize = 512) {
+  const byteCharacters = atob(b64Data);
+  const byteArrays = [];
+  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    const slice = byteCharacters.slice(offset, offset + sliceSize);
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
+  }
+  return new Blob(byteArrays, { type: contentType });
 }
