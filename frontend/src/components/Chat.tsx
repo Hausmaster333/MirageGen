@@ -1,33 +1,60 @@
-import { useState } from 'react';
-import type { Message } from '../types';
-import { type KeyboardEvent } from 'react';
-export const Chat = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState<string>('');
-  const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
+import { useState, type KeyboardEvent } from 'react';
+import type { Message, ChatResponse } from '../types';
 
-    setMessages(prev => [...prev, { text: inputValue, sender: 'user' }]);
+interface ChatProps {
+  onResponse: (response: ChatResponse) => void;
+  onLoading: (isLoading: boolean) => void;
+}
+
+export const Chat = ({ onResponse, onLoading }: ChatProps) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL;
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isLoading) return;
+
+    const userText = inputValue;
+    setMessages(prev => [...prev, { text: userText, sender: 'user' }]);
     setInputValue('');
-    setTimeout(() => {
+
+    setIsLoading(true);
+    onLoading(true);
+
+    try {
+      const res = await fetch(`${API_URL}/api/v1/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userText }),
+      });
+
+      if (!res.ok) throw new Error('API Error');
+
+      const data: ChatResponse = await res.json();
+
+      setMessages(prev => [...prev, { text: data.full_text, sender: 'bot' }]);
+      onResponse(data);
+    } catch (error) {
+      console.error(error);
       setMessages(prev => [
         ...prev,
-        { text: 'Привет! У меня все супер!', sender: 'bot' },
+        { text: 'Ошибка связи с сервером :(', sender: 'bot' },
       ]);
-    }, 2000);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSendMessage();
+    } finally {
+      setIsLoading(false);
+      onLoading(false);
     }
   };
 
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') handleSendMessage();
+  };
   return (
     <div className="w-full max-w-2xl mx-auto p-6 z-10 mb-8">
       <div className="bg-gray-800/40 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-white/10 ring-1 ring-white/5">
         <div className="p-4 flex gap-3 items-center">
           <input
+            disabled={isLoading}
             type="text"
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}

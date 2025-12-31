@@ -1,25 +1,29 @@
 import { useState } from 'react';
-import { type Emotion } from './types';
 import { Scene } from './components/Scene';
 import { Chat } from './components/Chat';
+import { type ChatResponse } from './types';
 
 export default function App() {
-  const [emotion, setEmotion] = useState<Emotion>('idle');
+  // Храним последний ответ от API для проигрывания
+  const [lastResponse, setLastResponse] = useState<ChatResponse | null>(null);
+
+  // Флаг, говорит аватару "думать" (пока идет запрос)
+  const [isThinking, setIsThinking] = useState(false);
+
   return (
     <div className="flex flex-col h-screen w-screen bg-gray-900 overflow-hidden">
-      <Scene emotion={emotion} />
-      <Chat />
-      <div className="mt-4 flex justify-center gap-2 opacity-50 hover:opacity-100 transition-opacity pb-2">
-        {(['thinking', 'happy', 'sad'] as Emotion[]).map(emo => (
-          <button
-            key={emo}
-            onClick={() => setEmotion(emo)}
-            className="px-3 py-1 bg-gray-800 text-white text-xs rounded-full border border-gray-600 hover:bg-gray-700 capitalize"
-          >
-            {emo}
-          </button>
-        ))}
-      </div>
+      {/* Передаем данные в сцену */}
+      <Scene
+        lastResponse={lastResponse}
+        isThinking={isThinking}
+        onAnimationEnd={() => setLastResponse(null)} // Сброс после окончания
+      />
+
+      {/* Чат обновляет эти данные */}
+      <Chat
+        onResponse={resp => setLastResponse(resp)}
+        onLoading={loading => setIsThinking(loading)}
+      />
     </div>
   );
 }
