@@ -62,7 +62,7 @@ class MockTTSEngine:
 class MockLipSyncGenerator:
     """Mock Lipsync для тестов."""
 
-    async def generate_blendshapes(self, audio_path, recognizer="pocketSphinx"):
+    async def generate_blendshapes(self, audio_path, recognizer="phonetic"):
         from avatar.schemas.animation_types import BlendshapeFrame, BlendshapeWeights
 
         return BlendshapeWeights(

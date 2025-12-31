@@ -1,10 +1,10 @@
 ﻿llm:
   provider: ollama
-  model: mistral:7b-instruct-q4_K_M
+  model: qwen2.5:7b-instruct-q5_K_M
   base_url: http://localhost:11434
   temperature: 0.7
   max_tokens: 512
-  system_prompt_ru: "Ты дружелюбный русскоязычный AI-ассистент."
+  system_prompt_ru: "Ты дружелюбный русскоязычный AI-ассистент. Отвечай ТОЛЬКО НА РУССКОМ ЯЗЫКЕ."
 
 tts:
   engine: silero
@@ -18,7 +18,7 @@ tts:
 lipsync:
   generator: rhubarb
   rhubarb_path: assets/rhubarb/rhubarb
-  recognizer: pocketSphinx
+  recognizer: phonetic
 
 motion:
   generator: preset

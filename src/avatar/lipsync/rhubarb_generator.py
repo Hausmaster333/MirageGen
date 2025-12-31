@@ -28,8 +28,8 @@ class RhubarbGenerator(ILipSyncGenerator):
 
     def __init__(
         self,
-        rhubarb_path: Path = Path("assets/rhubarb/rhubarb"),
-        recognizer: str = "pocketSphinx",
+        rhubarb_path: Path = Path("assets/rhubarb/rhubarb.exe"),
+        recognizer: str = "phonetic",
     ) -> None:
         """Инициализация RhubarbGenerator.
 
@@ -69,7 +69,7 @@ class RhubarbGenerator(ILipSyncGenerator):
     async def generate_blendshapes(
         self,
         audio_path: Path,
-        recognizer: str = "pocketSphinx",
+        recognizer: str = "phonetic",
     ) -> BlendshapeWeights:
         """Генерация blendshape-кадров из аудио через Rhubarb CLI.
 

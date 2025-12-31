@@ -21,7 +21,7 @@ class ILipSyncGenerator(ABC):
     async def generate_blendshapes(
         self,
         audio_path: Path,
-        recognizer: str = "pocketSphinx",
+        recognizer: str = "phoneticx",
     ) -> BlendshapeWeights:
         """Генерация blendshape-кадров из аудио.
 

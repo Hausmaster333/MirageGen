@@ -50,7 +50,7 @@ async def chat_endpoint(
             if frame.motion:
                 all_motion.append({"timestamp": frame.timestamp, "rotations": frame.motion})
 
-        full_text = "".join(full_text_chunks)
+        full_text = " ".join(full_text_chunks)
         merged_audio = b"".join(all_audio_bytes)
 
         # Кодируем аудио в base64 для JSON

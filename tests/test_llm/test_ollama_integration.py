@@ -11,7 +11,7 @@ from avatar.schemas.llm_types import Message
 async def ollama_provider():
     """Fixture для реального OllamaProvider."""
     provider = OllamaProvider(
-        model="mistral:7b-instruct-q4_K_M",
+        model="qwen2.5:7b-instruct-q5_K_M",
         base_url="http://localhost:11434",
     )
 

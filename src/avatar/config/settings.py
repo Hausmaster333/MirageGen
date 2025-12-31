@@ -31,11 +31,11 @@ class LLMConfig(BaseSettings):
     """
 
     provider: Literal["ollama", "openai", "anthropic"] = "ollama"
-    model: str = "mistral:7b-instruct-q4_K_M"
+    model: str = "qwen2.5:7b-instruct-q5_K_M"
     base_url: str = "http://localhost:11434"
     temperature: float = Field(default=0.7, ge=0.0, le=2.0)
     max_tokens: int = Field(default=512, ge=1, le=4096)
-    system_prompt_ru: str = "Ты — дружелюбный русскоязычный AI-ассистент."
+    system_prompt_ru: str = "Ты ВСЕГДА отвечаешь ТОЛЬКО на русском языке, даже если вопрос задан на английском."
 
 
 class TTSConfig(BaseSettings):
@@ -64,8 +64,8 @@ class LipSyncConfig(BaseSettings):
     """
 
     generator: Literal["rhubarb"] = "rhubarb"
-    rhubarb_path: Path = Path("assets/rhubarb/rhubarb")
-    recognizer: Literal["pocketSphinx", "phonetic"] = "pocketSphinx"
+    rhubarb_path: Path = Path("assets/rhubarb/rhubarb.exe")
+    recognizer: Literal["pocketSphinx", "phonetic"] = "phonetic"
 
 
 class MotionConfig(BaseSettings):
@@ -95,7 +95,14 @@ class APIConfig(BaseSettings):
 
     host: str = "0.0.0.0"  # noqa: S104
     port: int = 8000
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    cors_origins: list[str] = Field(
+        default_factory=lambda: [
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://localhost:8000",
+            "http://127.0.0.1:5173",
+        ]
+    )
 
 
 class Settings(BaseSettings):
